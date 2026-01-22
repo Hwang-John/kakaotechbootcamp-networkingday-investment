@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>투자 프로그램</title>
+</head>
+<body>
+
+<h2>투자자 이름 입력</h2>
+<input id="username" placeholder="이름 입력" />
+<button id="startBtn">시작하기</button>
+
+<hr />
+
+<h3 id="money"></h3>
+<h2>팀 리스트</h2>
+<div id="teams"></div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import {
+  doc, setDoc, getDoc,
+  collection, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const startBtn = document.getElementById("startBtn");
+const usernameInput = document.getElementById("username");
+const moneyEl = document.getElementById("money");
+const teamsEl = document.getElementById("teams");
+
+const userName = localStorage.getItem("user");
+
+// 1️⃣ 사용자 생성
+startBtn.onclick = async () => {
+  const name = usernameInput.value.trim();
+  if (!name) return alert("이름 입력");
+
+  await setDoc(doc(db, "users", name), {
+    name,
+    remainingMoney: 10000000
+  });
+
+  localStorage.setItem("user", name);
+  location.reload();
+};
+
+// 2️⃣ 남은 투자금 표시
+async function loadMoney() {
+  if (!userName) return;
+  const snap = await getDoc(doc(db, "users", userName));
+  if (snap.exists()) {
+    moneyEl.innerText =
+      `남은 투자금: ${snap.data().remainingMoney.toLocaleString()}원`;
+  }
+}
+
+// 3️⃣ 팀 리스트 실시간 표시
+onSnapshot(collection(db, "teams"), snapshot => {
+  teamsEl.innerHTML = "";
+  snapshot.forEach(docu => {
+    const team = docu.data();
+    teamsEl.innerHTML += `
+      <div style="border:1px solid #ccc; margin:10px; padding:10px"
+           onclick="location.href='team.html?id=${docu.id}'">
+        <b>${team.name}</b><br/>
+        총 투자금: ${team.totalInvestment.toLocaleString()}원
+      </div>
+    `;
+  });
+});
+
+loadMoney();
+</script>
+
+</body>
+</html>

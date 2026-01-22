@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>관리자</title>
+</head>
+<body>
+
+<h2>팀별 투자 현황</h2>
+<div id="list"></div>
+
+<script type="module">
+import { db } from "./firebase.js";
+import { collection, onSnapshot }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const list = document.getElementById("list");
+
+onSnapshot(collection(db, "teams"), snapshot => {
+  list.innerHTML = "";
+  snapshot.forEach(docu => {
+    list.innerHTML += `
+      <div style="margin:10px">
+        ${docu.data().name} :
+        ${docu.data().totalInvestment.toLocaleString()}원
+      </div>
+    `;
+  });
+});
+</script>
+
+</body>
+</html>
+
