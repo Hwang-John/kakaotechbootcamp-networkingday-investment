@@ -1,59 +1,16 @@
-<h2 id="teamName"></h2>
-<input id="amount" placeholder="투자금 (10만원 단위)" />
-<button onclick="invest()">투자</button>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>팀 투자</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
-<script type="module">
-import { db } from "./firebase.js";
-import {
- doc, getDoc, updateDoc, addDoc, collection
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const user = localStorage.getItem("user");
-const params = new URLSearchParams(location.search);
-const teamId = params.get("id");
-
-const teamRef = doc(db, "teams", teamId);
-const userRef = doc(db, "users", user);
-
-async function loadTeam() {
-  const snap = await getDoc(teamRef);
-  document.getElementById("teamName").innerText = snap.data().name;
-}
-loadTeam();
-
-window.invest = async function () {
-  const amount = Number(document.getElementById("amount").value);
-  if (amount % 100000 !== 0) return alert("10만원 단위");
-
-  const userSnap = await getDoc(userRef);
-  if (userSnap.data().remainingMoney < amount)
-    return alert("잔액 부족");
-
-  // 중복 투자 방지
-  const investId = `${user}_${teamId}`;
-  const investRef = doc(db, "investments", investId);
-  if ((await getDoc(investRef)).exists())
-    return alert("이미 투자함");
-
-  await updateDoc(userRef, {
-    remainingMoney: userSnap.data().remainingMoney - amount
-  });
-
-  const teamSnap = await getDoc(teamRef);
-  await updateDoc(teamRef, {
-    totalInvestment: teamSnap.data().totalInvestment + amount
-  });
-
-  await addDoc(collection(db, "investments"), {
-    user,
-    teamId,
-    amount
-  });
-
-  alert("투자 완료");
-  location.href = "index.html";
-};
-</script>
+<nav class="navbar">
+  <a href="index.html">홈</a>
+  <a href="admin.html">관리자</a>
+</nav>
 
 <h2 id="teamName"></h2>
 <input id="amount" placeholder="투자금 (10만원 단위)" />
@@ -62,19 +19,40 @@ window.invest = async function () {
 <script type="module">
 import { db } from "./firebase.js";
 import {
- doc, getDoc, updateDoc, addDoc, collection
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+ doc, getDoc, updateDoc, setDoc, collection, runTransaction
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 const user = localStorage.getItem("user");
 const params = new URLSearchParams(location.search);
 const teamId = params.get("id");
 
+// null 체크
+if (!user) {
+  alert("투자자 이름을 입력하여 시작하세요.");
+  location.href = "index.html";
+}
+
+if (!teamId) {
+  alert("잘못된 접근입니다");
+  location.href = "index.html";
+}
+
 const teamRef = doc(db, "teams", teamId);
 const userRef = doc(db, "users", user);
 
 async function loadTeam() {
-  const snap = await getDoc(teamRef);
-  document.getElementById("teamName").innerText = snap.data().name;
+  try {
+    const snap = await getDoc(teamRef);
+    if (!snap.exists()) {
+      alert("존재하지 않는 팀입니다");
+      location.href = "index.html";
+      return;
+    }
+    document.getElementById("teamName").innerText = snap.data().name;
+  } catch (error) {
+    console.error("팀 로드 오류:", error);
+    alert("팀 정보를 불러올 수 없습니다");
+  }
 }
 loadTeam();
 
@@ -82,32 +60,63 @@ window.invest = async function () {
   const amount = Number(document.getElementById("amount").value);
   if (amount % 100000 !== 0) return alert("10만원 단위");
 
-  const userSnap = await getDoc(userRef);
-  if (userSnap.data().remainingMoney < amount)
-    return alert("잔액 부족");
+  try {
+    // Transaction을 사용하여 Race Condition 방지
+    await runTransaction(db, async (transaction) => {
+      // 중복 투자 방지 - setDoc으로 고정 ID 사용
+      const investId = `${user}_${teamId}`;
+      const investRef = doc(db, "investments", investId);
+      const investSnap = await transaction.get(investRef);
 
-  // 중복 투자 방지
-  const investId = `${user}_${teamId}`;
-  const investRef = doc(db, "investments", investId);
-  if ((await getDoc(investRef)).exists())
-    return alert("이미 투자함");
+      if (investSnap.exists()) {
+        throw new Error("이미 투자함");
+      }
 
-  await updateDoc(userRef, {
-    remainingMoney: userSnap.data().remainingMoney - amount
-  });
+      const userSnap = await transaction.get(userRef);
+      if (!userSnap.exists()) {
+        throw new Error("사용자 정보를 찾을 수 없습니다");
+      }
 
-  const teamSnap = await getDoc(teamRef);
-  await updateDoc(teamRef, {
-    totalInvestment: teamSnap.data().totalInvestment + amount
-  });
+      const userData = userSnap.data();
+      const remainingMoney = userData.remainingMoney || 0;
 
-  await addDoc(collection(db, "investments"), {
-    user,
-    teamId,
-    amount
-  });
+      if (remainingMoney < amount) {
+        throw new Error("잔액 부족");
+      }
 
-  alert("투자 완료");
-  location.href = "index.html";
+      const teamSnap = await transaction.get(teamRef);
+      if (!teamSnap.exists()) {
+        throw new Error("팀 정보를 찾을 수 없습니다");
+      }
+
+      const teamData = teamSnap.data();
+      const totalInvestment = teamData.totalInvestment || 0;
+
+      // 트랜잭션 내에서 모든 업데이트 수행
+      transaction.update(userRef, {
+        remainingMoney: remainingMoney - amount
+      });
+
+      transaction.update(teamRef, {
+        totalInvestment: totalInvestment + amount
+      });
+
+      transaction.set(investRef, {
+        user,
+        teamId,
+        amount,
+        timestamp: new Date()
+      });
+    });
+
+    alert("투자 완료");
+    location.href = "index.html";
+  } catch (error) {
+    console.error("투자 오류:", error);
+    alert(error.message || "투자 처리 중 오류가 발생했습니다");
+  }
 };
 </script>
+
+</body>
+</html>
