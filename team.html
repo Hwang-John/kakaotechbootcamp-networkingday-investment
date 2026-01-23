@@ -28,7 +28,7 @@ const teamId = params.get("id");
 
 // null 체크
 if (!user) {
-  alert("로그인이 필요합니다");
+  alert("투자자 이름을 입력하여 시작하세요.");
   location.href = "index.html";
 }
 
@@ -67,7 +67,7 @@ window.invest = async function () {
       const investId = `${user}_${teamId}`;
       const investRef = doc(db, "investments", investId);
       const investSnap = await transaction.get(investRef);
-      
+
       if (investSnap.exists()) {
         throw new Error("이미 투자함");
       }
@@ -79,7 +79,7 @@ window.invest = async function () {
 
       const userData = userSnap.data();
       const remainingMoney = userData.remainingMoney || 0;
-      
+
       if (remainingMoney < amount) {
         throw new Error("잔액 부족");
       }
