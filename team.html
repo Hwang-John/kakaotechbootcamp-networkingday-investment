@@ -15,6 +15,8 @@
 
 <!-- 팀 이름 및 투자 입력 -->
 <h2 id="teamName"></h2>
+팀 이름 <span id="investmentBadge" class="badge"></span>
+</h2>
 <input id="amount" placeholder="투자금 (10만원 단위)" />
 <button onclick="invest()">투자</button>
 
@@ -47,9 +49,8 @@ const userRef = doc(db, "users", user);
 // 팀 데이터 로드 함수
 async function loadTeam() {
   try {
-    const snap = await getDoc(teamRef); // 팀 데이터 가져오기
+    const snap = await getDoc(teamRef);
 
-    // 팀 존재 여부 확인
     if (!snap.exists()) {
       alert("존재하지 않는 팀입니다");
       location.href = "index.html";
@@ -59,15 +60,26 @@ async function loadTeam() {
     const teamData = snap.data();
     const teamName = teamData.name;
 
-    // 본인 팀인 경우 차단 로직
     if (teamName === user) {
       alert("본인의 팀은 투자할 수 없습니다");
-      location.href = "index.html"; // 홈 화면으로 리다이렉트
+      location.href = "index.html";
       return;
     }
 
-    // 팀 이름 화면에 표시
     document.getElementById("teamName").innerText = teamName;
+
+    const investId = `${user}_${teamId}`;
+    const investRef = doc(db, "investments", investId);
+    const investSnap = await getDoc(investRef);
+
+    const badgeElement = document.getElementById("investmentBadge");
+    if (investSnap.exists()) {
+      badgeElement.innerText = "투자 완료";
+      badgeElement.classList.add("badge-invested");
+    } else {
+      badgeElement.innerText = "미투자";
+      badgeElement.classList.add("badge-not-invested");
+    }
   } catch (error) {
     console.error("팀 로드 오류:", error);
     alert("팀 정보를 불러올 수 없습니다");
