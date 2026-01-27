@@ -1,18 +1,97 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  max-width: 480px; 
+  margin: 0 auto; 
+  background-color: #f9f9f9; 
+}
+
+#progressBar {
+  height: 16px;
+  width: 90%;
+  background: #eee;
+  border-radius: 8px;
+  margin: 16px auto;
+  overflow: hidden;
+}
+#progressBar div {
+  height: 100%;
+  width: 60%; 
+  background: #4CAF50;
+  transition: width 0.5s ease;
+}
+
 .navbar {
   display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  background-color: #f8f8f8;
-  border-bottom: 1px solid #e0e0e0;
+  justify-content: space-around; 
+  padding: 10px 8px; 
+  background-color: #4CAF50;
+  position: sticky; 
+  top: 0;
+  z-index: 1000; 
 }
 
 .navbar a {
-  color: #333;
+  color: white;
+  font-size: 16px; 
+  font-weight: bold;
   text-decoration: none;
-  font-weight: 600;
 }
 
 .navbar a:hover {
-  text-decoration: underline;
+  font-weight: bold; 
+}
+
+
+input, button {
+  display: block;
+  padding: 14px;
+  margin: 12px auto; 
+  width: 80%;
+  font-size: 16px;
+}
+
+button {
+  background-color: #4CAF50;
+  border-radius: 6px;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049; 
+}
+
+#teams div {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin: 12px auto;
+  padding: 16px;
+  width: 90%;
+  background-color: white;
+}
+
+#teams div:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+}
+
+#teams div b {
+  font-size: 16px;
+  color: #333;
+}
+
+#teams div:hover b {
+  color: #4CAF50;
+}
+
+@media screen and (max-width: 480px) {
+  input, button {
+    width: 90%; 
+  }
+  #teams div {
+    width: 95%;
+  }
 }
