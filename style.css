@@ -44,7 +44,6 @@ body {
   font-weight: bold; 
 }
 
-
 input, button {
   display: block;
   padding: 14px;
@@ -111,44 +110,6 @@ button:hover {
 }
 
 /* 미투자 상태 */
-.badge-not-invested {
-  background-color: red;
-  color: white;
-}
-
-.team-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  margin: 12px auto;
-  width: 90%;
-  background-color: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-}
-
-.team-card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.team-name {
-  font-size: 16px;
-  color: #333;
-}
-
-.badge {
-  font-size: 12px;
-  padding: 5px 10px;
-  border-radius: 12px;
-  display: inline-block;
-}
-
-.badge-invested {
-  background-color: green;
-  color: white;
-}
-
 .badge-not-invested {
   background-color: red;
   color: white;
