@@ -391,3 +391,7 @@ MIT License
 ## 📞 문의
 
 프로젝트 관련 문의사항은 이슈를 통해 남겨주세요.
+
+## special thanks to
+
+kit.t
