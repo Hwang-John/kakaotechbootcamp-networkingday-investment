@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>카카오 테크 부트캠프 투자 프로그램</title>
+  <title>카카오테크 부트캠프 투자 프로그램</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -18,7 +18,12 @@
 
 <hr />
 
+<div id="progressBar">
+  <div></div> 
+</div>
+
 <h3 id="money"></h3>
+
 <h2>팀 리스트</h2>
 <div id="teams"></div>
 
@@ -75,8 +80,11 @@ async function loadMoney() {
       const userData = snap.data();
       const remainingMoney = userData.remainingMoney || 0;
       moneyEl.innerText = `남은 투자금: ${remainingMoney.toLocaleString()}원`;
+
+      // ✅ 진행률 업데이트 (추가된 코드)
+      const progress = (1 - remainingMoney / 10000000) * 100; // %
+      document.querySelector("#progressBar div").style.width = `${progress}%`;
     } else {
-      // 사용자 정보가 없으면 로그아웃
       localStorage.removeItem("user");
       location.reload();
     }
@@ -107,4 +115,3 @@ loadMoney();
 
 </body>
 </html>
-
