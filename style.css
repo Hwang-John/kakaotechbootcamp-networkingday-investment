@@ -95,3 +95,23 @@ button:hover {
     width: 95%;
   }
 }
+
+/* 투자 상태 뱃지 */
+.badge {
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+/* 투자 완료 상태 */
+.badge-invested {
+  background-color: green;
+  color: white;
+}
+
+/* 미투자 상태 */
+.badge-not-invested {
+  background-color: red;
+  color: white;
+}
