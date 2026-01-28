@@ -201,3 +201,22 @@ button:hover {
     color: #333; /* 텍스트 색상 */
     margin-top: 5px; /* 이미지와 텍스트 사이 여백 */
 }
+
+.dashboard-controls {
+  margin-bottom: 20px; /* 버튼과 리스트 사이 간격 */
+  text-align: right; /* 버튼 위치 조정 */
+}
+
+#sortByInvestment {
+  background-color: blue;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#sortByInvestment:hover {
+  background-color: skyblue; /* 호버 시 더 어두운 초록색 */
+}
