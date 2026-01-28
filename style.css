@@ -153,3 +153,22 @@ button:hover {
   background-color: red;
   color: white;
 }
+
+/* 스타일링 추가: main-header */
+.main-header {
+    text-align: center; /* 텍스트 중앙 정렬 */
+    margin: 0; /* 여백 제거 */
+    padding: 0;
+}
+
+.header-image {
+    width: 100%; /* 이미지를 페이지 전체 너비로 확장 */
+    max-height: 400px; /* 최대 높이 설정 */
+    object-fit: cover; /* 이미지 비율 유지 및 크기 조정 */
+}
+
+.header-title {
+    font-size: 24px; /* 텍스트 크기 */
+    color: #333; /* 텍스트 색상 */
+    margin-top: 10px; /* 이미지와 텍스트 사이 여백 */
+}
