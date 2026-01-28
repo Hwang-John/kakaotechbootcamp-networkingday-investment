@@ -15,13 +15,34 @@ body {
   border-radius: 8px;
   margin: 16px auto;
   overflow: hidden;
+  position: relative;
 }
 
 #progressBar div {
   height: 100%;
-  width: 100%; /* 시작 시 프로그레스 바가 가득 차 있음 */
+  width: 100%; /* 기본값: 게이지가 가득 차 있음 */
   background: blue;
-  transition: width 0.5s ease; /* 부드러운 애니메이션 */
+  transition: width 0.5s ease; /* 부드러운 감소 애니메이션 */
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between; /* 양 끝으로 정렬 */
+  align-items: center;
+  margin-top: 8px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+#currentValue {
+  position: absolute;
+  top: 20px; /* 프로그레스 바 밑에 위치 */
+  left: 50%; /* 기본 위치를 중앙에 설정 */
+  transform: translateX(-50%); /* 정확한 중앙 정렬 */
+  font-weight: bold;
+  font-size: 12px;
+  color: black;
 }
 
 .navbar {
