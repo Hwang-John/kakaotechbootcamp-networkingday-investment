@@ -12,6 +12,22 @@
   <a href="admin.html">관리자</a>
 </nav>
 
+<!-- 관리자 페이지 - 비밀번호 입력 섹션 -->
+<div id="loginContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+  <h2>관리자 페이지</h2>
+  <p>비밀번호를 입력하세요.</p>
+  <input id="passwordInput" type="password" placeholder="비밀번호" style="padding: 8px; width: 300px; margin-bottom: 10px; font-size: 16px;" />
+  <button id="loginButton" style="padding: 10px 20px; background-color: blue; color: white; border: none; border-radius: 5px; cursor: pointer;">확인</button>
+  <p id="errorText" style="color: red; margin-top: 10px; display: none;">잘못된 비밀번호입니다. 다시 시도하세요.</p>
+</div>
+
+<!-- 관리자 콘텐츠 (초기에 숨김 처리) -->
+<div id="adminContent" style="display: none;">
+  <nav class="navbar">
+    <a href="index.html">홈</a>
+    <a href="admin.html">관리자</a>
+  </nav>
+
 <h2>관리자 페이지</h2>
 
 <!-- 팀 생성 섹션 -->
@@ -21,11 +37,6 @@
   <button id="addTeamBtn" style="background-color:blue; color:white; padding:10px 20px; cursor:pointer; border:none; border-radius:5px">팀 추가</button>
 </div>
 
-<!-- 팀별 투자 현황 -->
-<h3>팀별 투자 현황</h3>
-<button id="resetBtn" style="background-color:#ff4444; color:white; padding:10px 20px; margin-bottom:20px; cursor:pointer; border:none; border-radius:5px">전체 데이터 초기화</button>
-<div id="list"></div>
-
 <div class="dashboard-controls">
   <button id="sortByInvestment">투자 많이 받은 순</button>
 </div>
@@ -33,9 +44,40 @@
   <!-- 팀 리스트가 여기에 동적으로 렌더링 됨 -->
 </div>
 
+
+<!-- 팀별 투자 현황 -->
+<h3>팀별 투자 현황</h3>
+<button id="resetBtn" style="background-color:#ff4444; color:white; padding:10px 20px; margin-bottom:20px; cursor:pointer; border:none; border-radius:5px">전체 데이터 초기화</button>
+<div id="list"></div>
+
 <script type="module">
 import { db } from "./firebase.js";
 import { collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+ // 전역 설정: 비밀번호
+  const ADMIN_PASSWORD = "happyyohan"; // 적절히 강력한 비밀번호로 설정하세요
+
+  // DOM 요소 가져오기
+  const loginContainer = document.getElementById("loginContainer");
+  const adminContent = document.getElementById("adminContent");
+  const passwordInput = document.getElementById("passwordInput");
+  const loginButton = document.getElementById("loginButton");
+  const errorText = document.getElementById("errorText");
+
+  // 로그인 버튼 클릭 이벤트
+  loginButton.onclick = () => {
+    const enteredPassword = passwordInput.value;
+
+    // 비밀번호 비교
+    if (enteredPassword === ADMIN_PASSWORD) {
+      // 성공
+      loginContainer.style.display = "none"; // 로그인 폼 숨김
+      adminContent.style.display = "block"; // 관리자 콘텐츠 표시
+    } else {
+      // 실패
+      errorText.style.display = "block"; // 에러 메시지 표시
+    }
+  };
 
 const list = document.getElementById("list");
 const resetBtn = document.getElementById("resetBtn");
