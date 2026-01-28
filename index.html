@@ -10,7 +10,12 @@
    <!-- 가장 상단의 이미지 및 텍스트 섹션 -->
     <header class="main-header">
         <img src="https://hwang-john.github.io/image/%EC%B9%B4%ED%85%8C%EB%B6%80%20%EB%A1%9C%EA%B3%A0.png" alt="업로드한 이미지" class="header-image" />
-        <h1 class="header-title">카테부 기업가 정신 프로그램 투자</h1>
+                <img src="https://hwang-john.github.io/image/ChatGPT%20Image%202026%EB%85%84%201%EC%9B%94%2028%EC%9D%BC%20%EC%98%A4%ED%9B%84%2005_24_03.png" alt="업로드한 이미지" class="header-image2" />
+        <h1 class="header-title">
+          카카오테크 부트캠프 네트워킹 데이 <br>
+          기업가 정신 프로그램<br>
+          투자 시뮬레이션 게임
+        </h1>
     </header>
 
 <nav class="navbar">
@@ -87,9 +92,12 @@ async function loadMoney() {
       const remainingMoney = userData.remainingMoney || 0;
       moneyEl.innerText = `남은 투자금: ${remainingMoney.toLocaleString()}원`;
 
-      // ✅ 진행률 업데이트 (추가된 코드)
-      const progress = (1 - remainingMoney / 10000000) * 100; // %
-      document.querySelector("#progressBar div").style.width = `${progress}%`;
+      // ✅ 진행률 업데이트
+      const progress = (remainingMoney / 10000000) * 100; // 진행률 (남은 금액의 %)
+      const progressBar = document.querySelector("#progressBar div");
+
+      // 남은 금액에 비례하여 프로그레스 바 길이 조정 (애니메이션 적용)
+      progressBar.style.width = `${progress}%`;
     } else {
       localStorage.removeItem("user");
       location.reload();
