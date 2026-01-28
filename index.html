@@ -23,18 +23,18 @@
   <a href="admin.html">관리자</a>
 </nav>
 
-<h2>투자자 이름 입력</h2>
-<input id="username" placeholder="이름 입력" />
-<button id="startBtn">시작하기</button>
+<h2>팀 번호 입력</h2>
+<input id="username" placeholder="예시_1팀" />
+<button id="startBtn">투자 시작하기</button>
 
 <hr />
 
 <div id="progressBar">
   <div></div>
+  <span id="currentValue">10,000,000원</span>
 </div>
 <div class="progress-labels">
   <span id="startLabel">0원</span>
-  <span id="currentValue">10,000,000원</span>
   <span id="endLabel">10,000,000원</span>
 </div>
 
@@ -96,22 +96,22 @@ async function loadMoney() {
     if (snap.exists()) {
       const userData = snap.data();
       const remainingMoney = userData.remainingMoney || 0;
+
+      // 1️⃣ 투자금 텍스트 업데이트
       moneyEl.innerText = `남은 투자금: ${remainingMoney.toLocaleString()}원`;
 
-      // ✅ 프로그레스 바 진행률 계산
+      // 2️⃣ 프로그레스 바 진행률 업데이트
       const progressBar = document.querySelector("#progressBar div");
       const progress = (remainingMoney / 10000000) * 100; // 진행률 계산
       progressBar.style.width = `${progress}%`;
 
-      // ✅ 현재 남은 금액 업데이트 및 위치 조정
+      // 3️⃣ 금액 위치 업데이트
       const currentValueEl = document.getElementById("currentValue");
-      currentValueEl.innerText = `${remainingMoney.toLocaleString()}원`;
-      
-      // position을 동적으로 계산 (가운데 위치)
       const progressBarElement = document.getElementById("progressBar");
-      const barWidth = progressBarElement.offsetWidth; // 프로그레스 바의 전체 길이
-      const updatedLeft = (progress / 100) * barWidth; // 진행률에 따라 위치 계산
-      currentValueEl.style.left = `${updatedLeft}px`; // 현재값 위치 업데이트
+      const barWidth = progressBarElement.offsetWidth;
+      const leftPosition = (progress / 100) * barWidth; // 위치 계산
+      currentValueEl.style.left = `${leftPosition}px`;
+      currentValueEl.innerText = `${remainingMoney.toLocaleString()}원`;
     } else {
       localStorage.removeItem("user");
       location.reload();

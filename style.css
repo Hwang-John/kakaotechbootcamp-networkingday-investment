@@ -15,7 +15,7 @@ body {
   border-radius: 8px;
   margin: 16px auto;
   overflow: hidden;
-  position: relative;
+  position: relative; /* 🔑 남은 금액의 상대 좌표 기준을 설정 */
 }
 
 #progressBar div {
@@ -25,24 +25,23 @@ body {
   transition: width 0.5s ease; /* 부드러운 감소 애니메이션 */
 }
 
-.progress-labels {
-  display: flex;
-  justify-content: space-between; /* 양 끝으로 정렬 */
-  align-items: center;
-  margin-top: 8px;
-  font-size: 14px;
-  font-family: Arial, sans-serif;
-  color: #333;
-}
-
 #currentValue {
-  position: absolute;
-  top: 20px; /* 프로그레스 바 밑에 위치 */
-  left: 50%; /* 기본 위치를 중앙에 설정 */
-  transform: translateX(-50%); /* 정확한 중앙 정렬 */
+  position: absolute; /* 프로그레스 바 기준으로 위치 설정 */
+  top: -25px; /* 프로그레스 바 위의 공간 (필요시 조정 가능) */
+  transform: translateX(-50%); /* 중앙 정렬 */
   font-weight: bold;
   font-size: 12px;
   color: black;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between; /* 0원과 10,000,000원을 양 끝에 배치 */
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  margin-top: 8px;
+  color: #333;
 }
 
 .navbar {
