@@ -162,13 +162,13 @@ button:hover {
 }
 
 .header-image {
-    width: 100%; /* 이미지를 페이지 전체 너비로 확장 */
-    max-height: 400px; /* 최대 높이 설정 */
-    object-fit: cover; /* 이미지 비율 유지 및 크기 조정 */
+    width: 50%; /* 이미지를 페이지 전체 너비로 확장 */
+    max-height: 200px; /* 최대 높이 설정 */
+    object-fit: fill; /* 이미지 비율 유지 및 크기 조정 */
 }
 
 .header-title {
     font-size: 24px; /* 텍스트 크기 */
-    color: #333; /* 텍스트 색상 */
+    color: #1b3cce5a; /* 텍스트 색상 */
     margin-top: 10px; /* 이미지와 텍스트 사이 여백 */
 }
