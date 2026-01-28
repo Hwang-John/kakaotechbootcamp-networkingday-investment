@@ -107,7 +107,7 @@ button:hover {
 
 /* 투자 완료 상태 */
 .badge-invested {
-  background-color: green;
+  background-color: blue;
   color: white;
 }
 
