@@ -26,6 +26,13 @@
 <button id="resetBtn" style="background-color:#ff4444; color:white; padding:10px 20px; margin-bottom:20px; cursor:pointer; border:none; border-radius:5px">전체 데이터 초기화</button>
 <div id="list"></div>
 
+<div class="dashboard-controls">
+  <button id="sortByInvestment">투자 많이 받은 순</button>
+</div>
+<div id="teamList">
+  <!-- 팀 리스트가 여기에 동적으로 렌더링 됨 -->
+</div>
+
 <script type="module">
 import { db } from "./firebase.js";
 import { collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
@@ -153,6 +160,49 @@ onSnapshot(collection(db, "teams"), snapshot => {
   console.error("팀 리스트 로드 오류:", error);
   list.innerHTML = "<div style='color:red'>데이터를 불러올 수 없습니다</div>";
 });
+
+onSnapshot(collection(db, "teams"), snapshot => {
+  // 기존 Firestore 구독 코드
+});
+
+const renderSortedTeams = async () => {
+  try {
+    const teamsSnapshot = await getDocs(collection(db, "teams"));
+    const teamsData = teamsSnapshot.docs.map((docu) => ({
+      id: docu.id,
+      ...docu.data()
+    }));
+
+    teamsData.sort((a, b) => b.totalInvestment - a.totalInvestment);
+
+    list.innerHTML = teamsData
+      .map(team => `
+        <div style="margin:10px; padding:10px; border:1px solid #ddd; border-radius:5px; display:flex; justify-content:space-between; align-items:center">
+          <div>
+            <strong>${team.name}</strong> : ${team.totalInvestment.toLocaleString()}원
+            <span style="color:#888; font-size:12px; margin-left:10px">(ID: ${team.id})</span>
+          </div>
+          <button onclick="deleteTeam('${team.id}', '${team.name}')" 
+                  style="background-color:#ff6b6b; color:white; padding:5px 15px; cursor:pointer; border:none; border-radius:3px">
+            삭제
+          </button>
+        </div>
+      `)
+      .join("");
+  } catch (error) {
+    console.error("팀 데이터를 정렬하여 렌더링하는 중 오류 발생:", error);
+    list.innerHTML = "<div style='color:red'>데이터를 정렬하는 데 실패했습니다</div>";
+  }
+};
+
+const sortByInvestmentButton = document.getElementById("sortByInvestment");
+sortByInvestmentButton.onclick = () => {
+  renderSortedTeams();
+};
+
+// 나머지 이벤트 핸들러 및 로직
+resetBtn.onclick = async () => { /* 초기화 코드 */ };
+addTeamBtn.onclick = async () => { /* 팀 추가 코드 */ };
 
 // 팀 삭제 함수 (전역으로 등록)
 window.deleteTeam = async (teamId, teamName) => {
