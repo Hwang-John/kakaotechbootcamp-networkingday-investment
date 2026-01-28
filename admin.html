@@ -7,12 +7,13 @@
 </head>
 <body>
 
+<!-- 내비게이션 바 -->
 <nav class="navbar">
   <a href="index.html">홈</a>
   <a href="admin.html">관리자</a>
 </nav>
 
-<!-- 관리자 페이지 - 비밀번호 입력 섹션 -->
+<!-- 관리자 로그인 섹션 -->
 <div id="loginContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
   <h2>관리자 페이지</h2>
   <p>비밀번호를 입력하세요.</p>
@@ -28,34 +29,46 @@
     <a href="admin.html">관리자</a>
   </nav>
 
-<h2>관리자 페이지</h2>
+  <h2>관리자 페이지</h2>
 
-<!-- 팀 생성 섹션 -->
-<div style="background-color:#f5f5f5; padding:20px; margin-bottom:20px; border-radius:5px">
-  <h3>새 팀 등록</h3>
-  <input id="teamName" placeholder="팀 이름" style="padding:8px; width:300px; margin-right:10px" />
-  <button id="addTeamBtn" style="background-color:blue; color:white; padding:10px 20px; cursor:pointer; border:none; border-radius:5px">팀 추가</button>
+  <!-- 팀 생성 섹션 -->
+  <div style="background-color:#f5f5f5; padding:20px; margin-bottom:20px; border-radius:5px">
+    <h3>새 팀 등록</h3>
+    <input id="teamName" placeholder="팀 이름" style="padding:8px; width:300px; margin-right:10px" />
+    <button id="addTeamBtn" style="background-color:blue; color:white; padding:10px 20px; cursor:pointer; border:none; border-radius:5px">팀 추가</button>
+  </div>
+
+  <div class="dashboard-controls">
+    <button id="sortByInvestment">투자 많이 받은 순</button>
+  </div>
+
+  <div id="teamList"></div>
+
+  <!-- 팀별 투자 현황 -->
+  <h3>팀별 투자 현황</h3>
+  <button id="resetBtn" style="background-color:#ff4444; color:white; padding:10px 20px; margin-bottom:20px; cursor:pointer; border:none; border-radius:5px">전체 데이터 초기화</button>
+  <div id="list"></div>
 </div>
-
-<div class="dashboard-controls">
-  <button id="sortByInvestment">투자 많이 받은 순</button>
-</div>
-<div id="teamList">
-  <!-- 팀 리스트가 여기에 동적으로 렌더링 됨 -->
-</div>
-
-
-<!-- 팀별 투자 현황 -->
-<h3>팀별 투자 현황</h3>
-<button id="resetBtn" style="background-color:#ff4444; color:white; padding:10px 20px; margin-bottom:20px; cursor:pointer; border:none; border-radius:5px">전체 데이터 초기화</button>
-<div id="list"></div>
 
 <script type="module">
-import { db } from "./firebase.js";
-import { collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+  // Firebase 초기화
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
- // 전역 설정: 비밀번호
-  const ADMIN_PASSWORD = "happyyohan"; // 적절히 강력한 비밀번호로 설정하세요
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 전역 설정: 비밀번호
+  const ADMIN_PASSWORD = "happyyohan"; // 적절히 강력한 비밀번호로 설정하세요.
 
   // DOM 요소 가져오기
   const loginContainer = document.getElementById("loginContainer");
@@ -63,6 +76,12 @@ import { collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, ge
   const passwordInput = document.getElementById("passwordInput");
   const loginButton = document.getElementById("loginButton");
   const errorText = document.getElementById("errorText");
+
+  const list = document.getElementById("list");
+  const resetBtn = document.getElementById("resetBtn");
+  const addTeamBtn = document.getElementById("addTeamBtn");
+  const teamNameInput = document.getElementById("teamName");
+  const sortByInvestmentButton = document.getElementById("sortByInvestment");
 
   // 로그인 버튼 클릭 이벤트
   loginButton.onclick = () => {
@@ -79,232 +98,98 @@ import { collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, ge
     }
   };
 
-const list = document.getElementById("list");
-const resetBtn = document.getElementById("resetBtn");
-const addTeamBtn = document.getElementById("addTeamBtn");
-const teamNameInput = document.getElementById("teamName");
+  // 팀 추가 버튼 핸들러
+  addTeamBtn.onclick = async () => {
+    const teamName = teamNameInput.value.trim();
+    if (!teamName) {
+      alert("팀 이름을 입력하세요.");
+      return;
+    }
 
-// 팀 추가 버튼
-addTeamBtn.onclick = async () => {
-  const teamName = teamNameInput.value.trim();
-  if (!teamName) {
-    alert("팀 이름을 입력하세요");
-    return;
-  }
+    try {
+      addTeamBtn.disabled = true;
+      addTeamBtn.innerText = "추가 중...";
 
-  try {
-    addTeamBtn.disabled = true;
-    addTeamBtn.innerText = "추가 중...";
+      const teamId = `team_${Date.now()}`;
+      
+      await setDoc(doc(db, "teams", teamId), {
+        name: teamName,
+        totalInvestment: 0,
+        createdAt: new Date()
+      });
 
-    // 팀 ID 생성 (랜덤 또는 시간 기반)
-    const teamId = `team_${Date.now()}`;
+      alert(`팀 "${teamName}"이 추가되었습니다!`);
+      teamNameInput.value = "";
 
-    await setDoc(doc(db, "teams", teamId), {
-      name: teamName,
-      totalInvestment: 0,
-      createdAt: new Date()
-    });
+    } catch (error) {
+      console.error("팀 추가 오류:", error);
+      alert("팀 추가 중 오류가 발생했습니다: " + error.message);
+    } finally {
+      addTeamBtn.disabled = false;
+      addTeamBtn.innerText = "팀 추가";
+    }
+  };
 
-    alert(`팀 "${teamName}"이 추가되었습니다!`);
-    teamNameInput.value = "";
-    
-  } catch (error) {
-    console.error("팀 추가 오류:", error);
-    alert("팀 추가 중 오류가 발생했습니다: " + error.message);
-  } finally {
-    addTeamBtn.disabled = false;
-    addTeamBtn.innerText = "팀 추가";
-  }
-};
+  // 전체 데이터 초기화 버튼 핸들러
+  resetBtn.onclick = async () => {
+    if (!confirm("정말로 모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
+      return;
+    }
 
-// 초기화 버튼
-resetBtn.onclick = async () => {
-  if (!confirm("정말로 모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
-    return;
-  }
+    try {
+      resetBtn.disabled = true;
+      resetBtn.innerText = "초기화 중...";
 
-  try {
-    resetBtn.disabled = true;
-    resetBtn.innerText = "초기화 중...";
+      const batch = writeBatch(db);
+      const collectionNames = ["users", "teams", "investments"];
 
-    // 배치 작업으로 효율적으로 삭제
-    const batch = writeBatch(db);
-    let deleteCount = 0;
-
-    // users 컬렉션 삭제
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    usersSnapshot.forEach((docSnap) => {
-      batch.delete(doc(db, "users", docSnap.id));
-      deleteCount++;
-    });
-
-    // teams 컬렉션 삭제
-    const teamsSnapshot = await getDocs(collection(db, "teams"));
-    teamsSnapshot.forEach((docSnap) => {
-      batch.delete(doc(db, "teams", docSnap.id));
-      deleteCount++;
-    });
-
-    // investments 컬렉션 삭제
-    const investmentsSnapshot = await getDocs(collection(db, "investments"));
-    investmentsSnapshot.forEach((docSnap) => {
-      batch.delete(doc(db, "investments", docSnap.id));
-      deleteCount++;
-    });
-
-    // connection_test 컬렉션도 정리
-    const testSnapshot = await getDocs(collection(db, "connection_test"));
-    testSnapshot.forEach((docSnap) => {
-      batch.delete(doc(db, "connection_test", docSnap.id));
-      deleteCount++;
-    });
-
-    await batch.commit();
-
-    alert(`초기화 완료! ${deleteCount}개의 문서가 삭제되었습니다.`);
-    
-    // 로컬스토리지도 초기화
-    localStorage.clear();
-    
-    resetBtn.disabled = false;
-    resetBtn.innerText = "전체 데이터 초기화";
-    
-  } catch (error) {
-    console.error("초기화 오류:", error);
-    alert("초기화 중 오류가 발생했습니다: " + error.message);
-    resetBtn.disabled = false;
-    resetBtn.innerText = "전체 데이터 초기화";
-  }
-};
-
-onSnapshot(collection(db, "teams"), snapshot => {
-  list.innerHTML = "";
-  snapshot.forEach(docu => {
-    const team = docu.data();
-    const teamName = team.name || "이름 없음";
-    const totalInvestment = team.totalInvestment || 0;
-    const teamId = docu.id;
-    
-    list.innerHTML += `
-      <div style="margin:10px; padding:10px; border:1px solid #ddd; border-radius:5px; display:flex; justify-content:space-between; align-items:center">
-        <div>
-          <strong>${teamName}</strong> : ${totalInvestment.toLocaleString()}원
-          <span style="color:#888; font-size:12px; margin-left:10px">(ID: ${teamId})</span>
-        </div>
-        <button onclick="deleteTeam('${teamId}', '${teamName}')" 
-                style="background-color:#ff6b6b; color:white; padding:5px 15px; cursor:pointer; border:none; border-radius:3px">
-          삭제
-        </button>
-      </div>
-    `;
-  });
-}, error => {
-  console.error("팀 리스트 로드 오류:", error);
-  list.innerHTML = "<div style='color:red'>데이터를 불러올 수 없습니다</div>";
-});
-
-onSnapshot(collection(db, "teams"), snapshot => {
-  // 기존 Firestore 구독 코드
-});
-
-const renderSortedTeams = async () => {
-  try {
-    const teamsSnapshot = await getDocs(collection(db, "teams"));
-    const teamsData = teamsSnapshot.docs.map((docu) => ({
-      id: docu.id,
-      ...docu.data()
-    }));
-
-    teamsData.sort((a, b) => b.totalInvestment - a.totalInvestment);
-
-    list.innerHTML = teamsData
-      .map(team => `
-        <div style="margin:10px; padding:10px; border:1px solid #ddd; border-radius:5px; display:flex; justify-content:space-between; align-items:center">
-          <div>
-            <strong>${team.name}</strong> : ${team.totalInvestment.toLocaleString()}원
-            <span style="color:#888; font-size:12px; margin-left:10px">(ID: ${team.id})</span>
-          </div>
-          <button onclick="deleteTeam('${team.id}', '${team.name}')" 
-                  style="background-color:#ff6b6b; color:white; padding:5px 15px; cursor:pointer; border:none; border-radius:3px">
-            삭제
-          </button>
-        </div>
-      `)
-      .join("");
-  } catch (error) {
-    console.error("팀 데이터를 정렬하여 렌더링하는 중 오류 발생:", error);
-    list.innerHTML = "<div style='color:red'>데이터를 정렬하는 데 실패했습니다</div>";
-  }
-};
-
-const sortByInvestmentButton = document.getElementById("sortByInvestment");
-sortByInvestmentButton.onclick = () => {
-  renderSortedTeams();
-};
-
-// 나머지 이벤트 핸들러 및 로직
-resetBtn.onclick = async () => { /* 초기화 코드 */ };
-addTeamBtn.onclick = async () => { /* 팀 추가 코드 */ };
-
-// 팀 삭제 함수 (전역으로 등록)
-window.deleteTeam = async (teamId, teamName) => {
-  if (!confirm(`정말로 "${teamName}" 팀을 삭제하시겠습니까?\n투자금은 투자자들에게 반환됩니다.`)) {
-    return;
-  }
-
-  try {
-    const batch = writeBatch(db);
-
-    // 1. 해당 팀의 투자 기록 찾기
-    const investmentsSnapshot = await getDocs(collection(db, "investments"));
-    let deletedInvestments = 0;
-    const refundMap = {}; // { userId: totalRefundAmount }
-    
-    investmentsSnapshot.forEach((docSnap) => {
-      const investment = docSnap.data();
-      if (investment.teamId === teamId) {
-        // 투자 기록 삭제
-        batch.delete(doc(db, "investments", docSnap.id));
-        deletedInvestments++;
-        
-        // 환불 금액 집계
-        const userId = investment.user;
-        const amount = investment.amount || 0;
-        refundMap[userId] = (refundMap[userId] || 0) + amount;
-      }
-    });
-
-    // 2. 투자자들에게 환불 처리
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    let refundedUsers = 0;
-    
-    usersSnapshot.forEach((docSnap) => {
-      const userId = docSnap.id;
-      if (refundMap[userId]) {
-        const userData = docSnap.data();
-        const currentMoney = userData.remainingMoney || 0;
-        const refundAmount = refundMap[userId];
-        
-        batch.update(doc(db, "users", userId), {
-          remainingMoney: currentMoney + refundAmount
+      for (const collectionName of collectionNames) {
+        const snapshot = await getDocs(collection(db, collectionName));
+        snapshot.forEach((docSnap) => {
+          batch.delete(doc(db, collectionName, docSnap.id));
         });
-        refundedUsers++;
       }
+
+      await batch.commit();
+
+      alert("초기화가 완료되었습니다!");
+    } catch (error) {
+      console.error("초기화 오류:", error);
+      alert("초기화 중 오류가 발생했습니다: " + error.message);
+    } finally {
+      resetBtn.disabled = false;
+      resetBtn.innerText = "전체 데이터 초기화";
+    }
+  };
+
+  // Firestore에서 팀 데이터를 실시간으로 받아오기
+  onSnapshot(collection(db, "teams"), snapshot => {
+    list.innerHTML = "";
+    snapshot.forEach(docu => {
+      const team = docu.data();
+      const teamName = team.name || "이름 없음";
+      const totalInvestment = team.totalInvestment || 0;
+      const teamId = docu.id;
+
+      list.innerHTML += `
+        <div>
+          <strong>${teamName}</strong>: ${totalInvestment.toLocaleString()}원
+        </div>`;
     });
+  });
+  
+  // 투자 많이 받은 순서로 정렬
+  sortByInvestmentButton.onclick = async () => {
+    const q = query(collection(db, "teams"), orderBy("totalInvestment", "desc"));
+    const snapshot = await getDocs(q);
 
-    // 3. 팀 삭제
-    batch.delete(doc(db, "teams", teamId));
-
-    await batch.commit();
-
-    alert(`팀 "${teamName}" 삭제 완료!\n- 투자 기록 ${deletedInvestments}개 삭제\n- ${refundedUsers}명의 투자자에게 환불 완료`);
-  } catch (error) {
-    console.error("팀 삭제 오류:", error);
-    alert("팀 삭제 중 오류가 발생했습니다: " + error.message);
-  }
-};
+    list.innerHTML = "";
+    snapshot.forEach(docu => {
+      const team = docu.data();
+      list.innerHTML += `<div><strong>${team.name}</strong>: ${team.totalInvestment}원</div>`;
+    });
+  };
 </script>
 
 </body>
 </html>
-
