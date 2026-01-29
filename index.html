@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>카카오테크 부트캠프 투자 프로그램</title>
-  <link rel="stylesheet" href="style.css?v=20260129-1" />
+  <link rel="stylesheet" href="style.css?v=20260129-5" />
 </head>
 <body>
 
@@ -24,9 +24,12 @@
   <a href="admin.html">관리자</a>
 </nav>
 
-<h2>팀 번호 입력</h2>
-<input id="username" placeholder="예시_1팀" />
-<button id="startBtn">투자 시작하기</button>
+<div id="loginSection">
+  <h2>팀 번호 입력</h2>
+  <input id="username" placeholder="예시_1팀" />
+  <button id="startBtn">투자 시작하기</button>
+</div>
+<p id="currentTeam" class="current-team" style="display: none;"></p>
 
 <hr />
 
@@ -55,8 +58,24 @@ const startBtn = document.getElementById("startBtn");
 const usernameInput = document.getElementById("username");
 const moneyEl = document.getElementById("money");
 const teamsEl = document.getElementById("teams");
+const loginSection = document.getElementById("loginSection");
+const currentTeamEl = document.getElementById("currentTeam");
 
 const userName = localStorage.getItem("user");
+
+function updateLoginUI(name) {
+  if (name) {
+    loginSection.style.display = "none";
+    currentTeamEl.style.display = "block";
+    currentTeamEl.innerText = `현재 로그인 팀: ${name}`;
+  } else {
+    loginSection.style.display = "block";
+    currentTeamEl.style.display = "none";
+    currentTeamEl.innerText = "";
+  }
+}
+
+updateLoginUI(userName);
 
 // 1️⃣ 사용자 생성
 startBtn.onclick = async () => {
@@ -69,6 +88,7 @@ startBtn.onclick = async () => {
     if (userDoc.exists()) {
       // 이미 존재하는 사용자는 로그인만
       localStorage.setItem("user", name);
+      updateLoginUI(name);
       location.reload();
       return;
     }
@@ -81,6 +101,7 @@ startBtn.onclick = async () => {
     });
 
     localStorage.setItem("user", name);
+    updateLoginUI(name);
     location.reload();
   } catch (error) {
     console.error("사용자 생성 오류:", error);

@@ -84,6 +84,14 @@ input, button {
   font-size: 16px;
 }
 
+.current-team {
+  margin: 16px 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #0b2f6b;
+  text-align: center;
+}
+
 #money {
   text-align: center;
 }
@@ -245,11 +253,51 @@ button:hover {
 }
 
 .team-invest-item {
-  background-color: white;
+  background-color: #fff;
+  border-left: 8px solid blue;
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin: 12px auto;
   padding: 14px 16px;
+}
+
+.team-invest-item:nth-child(even) {
+  background: #f6f9ff;
+}
+
+.team-invest-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.team-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-chip {
+  font-size: 11px;
+  font-weight: bold;
+  color: #1f2933;
+  background: #e3e8ef;
+  border-radius: 999px;
+  padding: 3px 8px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.team-name {
+  font-size: 16px;
+  color: #1f2933;
+}
+
+.team-amount {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0b2f6b;
 }
 
 .team-investors {

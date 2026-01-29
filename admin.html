@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>관리자</title>
-  <link rel="stylesheet" href="style.css?v=20260129-1" />
+  <link rel="stylesheet" href="style.css?v=20260129-5" />
 </head>
 <body>
 
@@ -151,7 +151,7 @@
 
   function renderTeamInvestments(teams) {
     list.innerHTML = "";
-    teams.forEach(({ id, data }) => {
+    teams.forEach(({ id, data }, index) => {
       const team = data;
       const teamName = team.name || "이름 없음";
       const totalInvestment = team.totalInvestment || 0;
@@ -160,7 +160,12 @@
 
       list.innerHTML += `
         <div class="team-invest-item">
-          <strong>${teamName}</strong> ${totalInvestment.toLocaleString()}원
+          <div class="team-invest-header">
+            <div class="team-title">
+              <span class="team-chip">${teamName}</span>
+            </div>
+            <div class="team-amount">${totalInvestment.toLocaleString()}원</div>
+          </div>
           <div class="team-investors">투자팀: ${investorText}</div>
         </div>`;
     });
