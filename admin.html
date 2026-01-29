@@ -25,11 +25,6 @@
 
 <!-- 관리자 콘텐츠 (초기에 숨김 처리) -->
 <div id="adminContent" style="display: none;">
-  <nav class="navbar">
-    <a href="index.html">홈</a>
-    <a href="admin.html">관리자</a>
-  </nav>
-
   <h2>관리자 페이지</h2>
 
   <!-- 팀 생성 섹션 -->
@@ -57,7 +52,7 @@
   import { collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
   // 전역 설정: 비밀번호
-  const ADMIN_PASSWORD = "happyyohan"; // 적절히 강력한 비밀번호로 설정하세요.
+  const ADMIN_PASSWORD = "1234#"; // 적절히 강력한 비밀번호로 설정하세요.
 
   // DOM 요소 가져오기
   const loginContainer = document.getElementById("loginContainer");

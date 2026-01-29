@@ -197,7 +197,7 @@ button:hover {
     padding: 16px 0;
     width: 120px;
     max-width: 40vw;
-    max-height: 50px; /* 최대 높이 설정 */
+    max-height: 100px; /* 최대 높이 설정 */
     object-fit: fill; /* 이미지 비율 유지 및 크기 조정 */
 }
 
