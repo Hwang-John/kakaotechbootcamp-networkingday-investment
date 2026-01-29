@@ -1,16 +1,26 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  max-width: 480px; 
-  margin: 0 auto; 
-  background-color: #f9f9f9; 
+  padding: 0 12px;
+  background-color: #f9f9f9;
+}
+
+@media screen and (min-width: 520px) {
+  body {
+    max-width: 520px;
+    margin: 0 auto;
+  }
 }
 
 #progressBar {
   height: 16px;
-  width: 90%;
+  width: 100%;
   background: #eee;
   border-radius: 8px;
   margin: 16px auto;
@@ -69,9 +79,13 @@ body {
 input, button {
   display: block;
   padding: 14px;
-  margin: 12px auto; 
-  width: 80%;
+  margin: 12px auto;
+  width: 100%;
   font-size: 16px;
+}
+
+#money {
+  text-align: center;
 }
 
 button {
@@ -91,7 +105,7 @@ button:hover {
   border-radius: 8px;
   margin: 12px auto;
   padding: 16px;
-  width: 90%;
+  width: 100%;
   background-color: white;
 }
 
@@ -109,11 +123,8 @@ button:hover {
 }
 
 @media screen and (max-width: 480px) {
-  input, button {
-    width: 90%; 
-  }
-  #teams div {
-    width: 95%;
+  body {
+    padding: 0 12px;
   }
 }
 
@@ -143,7 +154,7 @@ button:hover {
   align-items: center;
   padding: 16px;
   margin: 12px auto;
-  width: 90%;
+  width: 100%;
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
@@ -183,8 +194,9 @@ button:hover {
 }
 
 .header-image {
-    padding: 40px;
-    width: 20%; /* 이미지를 페이지 전체 너비로 확장 */
+    padding: 16px 0;
+    width: 120px;
+    max-width: 40vw;
     max-height: 50px; /* 최대 높이 설정 */
     object-fit: fill; /* 이미지 비율 유지 및 크기 조정 */
 }
