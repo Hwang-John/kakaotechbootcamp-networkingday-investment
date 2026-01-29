@@ -48,7 +48,7 @@
 import { db } from "./firebase.js";
 import {
   doc, setDoc, getDoc,
-  collection, onSnapshot
+  collection, onSnapshot, query, where
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 const startBtn = document.getElementById("startBtn");
@@ -123,21 +123,57 @@ async function loadMoney() {
   }
 }
 
-// 3️⃣ 팀 리스트 실시간 표시
-onSnapshot(collection(db, "teams"), snapshot => {
+let investedTeamIds = new Set();
+let investedAmounts = new Map();
+let latestTeams = [];
+
+function renderTeams() {
   teamsEl.innerHTML = "";
-  snapshot.forEach(docu => {
-    const team = docu.data();
+  latestTeams.forEach(({ id, data }) => {
+    const team = data;
     const totalInvestment = team.totalInvestment || 0;
+    const isInvested = investedTeamIds.has(id);
+    const badgeText = isInvested ? "투자 완료" : "미투자";
+    const badgeClass = isInvested ? "badge-invested" : "badge-not-invested";
+    const myAmount = investedAmounts.get(id) || 0;
+
     teamsEl.innerHTML += `
-      <div style="border:1px solid #ccc; margin:10px; padding:10px"
-           onclick="location.href='team.html?id=${docu.id}'">
-        <b>${team.name}</b><br/>
-        총 투자금: ${totalInvestment.toLocaleString()}원
+      <div class="team-card" onclick="location.href='team.html?id=${id}'">
+        <div class="team-row">
+          <span class="team-name">${team.name}</span>
+          <span class="badge ${badgeClass}">${badgeText}</span>
+          <span class="my-invest">내 투자금: ${myAmount.toLocaleString()}원</span>
+        </div>
       </div>
     `;
   });
+}
+
+// 3️⃣ 팀 리스트 실시간 표시
+onSnapshot(collection(db, "teams"), snapshot => {
+  latestTeams = [];
+  snapshot.forEach(docu => {
+    latestTeams.push({ id: docu.id, data: docu.data() });
+  });
+  renderTeams();
 });
+
+// 4️⃣ 내 투자 여부 실시간 표시
+if (userName) {
+  const q = query(collection(db, "investments"), where("user", "==", userName));
+  onSnapshot(q, snapshot => {
+    investedTeamIds = new Set();
+    investedAmounts = new Map();
+    snapshot.forEach(docu => {
+      const invest = docu.data();
+      if (invest.teamId) {
+        investedTeamIds.add(invest.teamId);
+        investedAmounts.set(invest.teamId, invest.amount || 0);
+      }
+    });
+    renderTeams();
+  });
+}
 
 loadMoney();
 </script>

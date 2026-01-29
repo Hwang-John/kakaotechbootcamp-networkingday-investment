@@ -149,11 +149,9 @@ button:hover {
 }
 
 .team-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  margin: 12px auto;
+  display: block;
+  padding: 8px 10px;
+  margin: 6px auto;
   width: 100%;
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -169,11 +167,24 @@ button:hover {
   color: #333;
 }
 
+.team-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.my-invest {
+  font-size: 14px;
+  color: #333;
+}
+
 .badge {
-  font-size: 12px;
-  padding: 5px 10px;
-  border-radius: 12px;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 10px;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .badge-invested {
@@ -231,4 +242,18 @@ button:hover {
 
 #sortByInvestment:hover {
   background-color: skyblue; /* 호버 시 더 어두운 초록색 */
+}
+
+.team-invest-item {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 12px auto;
+  padding: 14px 16px;
+}
+
+.team-investors {
+  color: #333;
+  font-size: 14px;
+  margin-top: 6px;
 }

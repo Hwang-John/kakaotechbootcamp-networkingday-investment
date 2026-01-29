@@ -146,20 +146,55 @@
     }
   };
 
-  // Firestore에서 팀 데이터를 실시간으로 받아오기
-  onSnapshot(collection(db, "teams"), snapshot => {
+  let latestTeams = [];
+  let investmentsByTeam = new Map();
+
+  function renderTeamInvestments(teams) {
     list.innerHTML = "";
-    snapshot.forEach(docu => {
-      const team = docu.data();
+    teams.forEach(({ id, data }) => {
+      const team = data;
       const teamName = team.name || "이름 없음";
       const totalInvestment = team.totalInvestment || 0;
-      const teamId = docu.id;
+      const investors = investmentsByTeam.get(id) || [];
+      const investorText = investors.length ? investors.join(", ") : "없음";
 
       list.innerHTML += `
-        <div>
-          <strong>${teamName}</strong>: ${totalInvestment.toLocaleString()}원
+        <div class="team-invest-item">
+          <strong>${teamName}</strong> ${totalInvestment.toLocaleString()}원
+          <div class="team-investors">투자팀: ${investorText}</div>
         </div>`;
     });
+  }
+
+  // Firestore에서 팀 데이터를 실시간으로 받아오기
+  onSnapshot(collection(db, "teams"), snapshot => {
+    latestTeams = [];
+    snapshot.forEach(docu => {
+      latestTeams.push({ id: docu.id, data: docu.data() });
+    });
+    renderTeamInvestments(latestTeams);
+  });
+
+  // Firestore에서 투자 데이터를 실시간으로 받아오기
+  onSnapshot(collection(db, "investments"), snapshot => {
+    const nextMap = new Map();
+    snapshot.forEach(docu => {
+      const investment = docu.data();
+      const teamId = investment.teamId;
+      const investor = investment.user;
+      if (!teamId || !investor) return;
+
+      if (!nextMap.has(teamId)) {
+        nextMap.set(teamId, new Set());
+      }
+      nextMap.get(teamId).add(investor);
+    });
+
+    investmentsByTeam = new Map(
+      Array.from(nextMap.entries()).map(([teamId, set]) => [teamId, Array.from(set)])
+    );
+
+    renderTeamInvestments(latestTeams);
   });
   
   // 투자 많이 받은 순서로 정렬
@@ -167,11 +202,11 @@
     const q = query(collection(db, "teams"), orderBy("totalInvestment", "desc"));
     const snapshot = await getDocs(q);
 
-    list.innerHTML = "";
+    latestTeams = [];
     snapshot.forEach(docu => {
-      const team = docu.data();
-      list.innerHTML += `<div><strong>${team.name}</strong>: ${team.totalInvestment}원</div>`;
+      latestTeams.push({ id: docu.id, data: docu.data() });
     });
+    renderTeamInvestments(latestTeams);
   };
 </script>
 
