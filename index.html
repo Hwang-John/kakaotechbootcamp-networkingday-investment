@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>카카오테크 부트캠프 투자 프로그램</title>
-  <link rel="stylesheet" href="style.css?v=20260129-5" />
+  <link rel="stylesheet" href="style.css?v=20260130-1" />
 </head>
 <body>
 
@@ -22,6 +22,7 @@
 <nav class="navbar">
   <a href="index.html">홈</a>
   <a href="admin.html">관리자</a>
+  <button id="logoutBtn" type="button" class="nav-button" style="display: none;">로그아웃</button>
 </nav>
 
 <div id="loginSection">
@@ -60,6 +61,7 @@ const moneyEl = document.getElementById("money");
 const teamsEl = document.getElementById("teams");
 const loginSection = document.getElementById("loginSection");
 const currentTeamEl = document.getElementById("currentTeam");
+const logoutBtn = document.getElementById("logoutBtn");
 
 const userName = localStorage.getItem("user");
 
@@ -68,14 +70,23 @@ function updateLoginUI(name) {
     loginSection.style.display = "none";
     currentTeamEl.style.display = "block";
     currentTeamEl.innerText = `현재 로그인 팀: ${name}`;
+    logoutBtn.style.display = "inline-flex";
   } else {
     loginSection.style.display = "block";
     currentTeamEl.style.display = "none";
     currentTeamEl.innerText = "";
+    logoutBtn.style.display = "none";
   }
 }
 
 updateLoginUI(userName);
+
+// 로그아웃
+logoutBtn.onclick = () => {
+  localStorage.removeItem("user");
+  updateLoginUI("");
+  location.reload();
+};
 
 // 1️⃣ 사용자 생성
 startBtn.onclick = async () => {
@@ -152,16 +163,16 @@ function renderTeams() {
   teamsEl.innerHTML = "";
   latestTeams.forEach(({ id, data }) => {
     const team = data;
-    const totalInvestment = team.totalInvestment || 0;
     const isInvested = investedTeamIds.has(id);
     const badgeText = isInvested ? "투자 완료" : "미투자";
     const badgeClass = isInvested ? "badge-invested" : "badge-not-invested";
     const myAmount = investedAmounts.get(id) || 0;
+    const teamName = team.name || "이름 없음";
 
     teamsEl.innerHTML += `
       <div class="team-card" onclick="location.href='team.html?id=${id}'">
         <div class="team-row">
-          <span class="team-name">${team.name}</span>
+          <span class="team-name">${teamName}</span>
           <span class="badge ${badgeClass}">${badgeText}</span>
           <span class="my-invest">내 투자금: ${myAmount.toLocaleString()}원</span>
         </div>
