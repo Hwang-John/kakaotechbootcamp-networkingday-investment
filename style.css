@@ -64,15 +64,35 @@ body {
   z-index: 1000; 
 }
 
-.navbar a {
+.navbar a,
+.navbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  margin: 0;
+  width: auto;
   color: white;
   font-size: 16px; 
   font-weight: bold;
   text-decoration: none;
+  line-height: 1;
 }
 
-.navbar a:hover {
+.navbar a:hover,
+.navbar button:hover {
   font-weight: bold; 
+}
+
+.navbar button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 
@@ -267,7 +287,7 @@ button:hover {
 
 .team-invest-header {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
@@ -295,13 +315,75 @@ button:hover {
 }
 
 .team-amount {
-  font-size: 16px;
+  font-size: 21px;
   font-weight: bold;
   color: #0b2f6b;
+  margin-top: 6px;
 }
 
 .team-investors {
   color: #333;
   font-size: 14px;
   margin-top: 6px;
+}
+
+.team-invest-stats {
+  color: #1f2933;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.team-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 0;
+  height: 20px;
+  padding: 1px 6px;
+  margin: 0;
+  border-radius: 4px;
+  background-color: #e53935 !important;
+  color: white;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  font-size: 12px;
+}
+
+.team-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.team-create-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.team-create-title {
+  margin: 0;
+}
+
+.team-create-input {
+  display: inline-block;
+  width: 240px;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+}
+
+.team-create-button {
+  display: inline-block;
+  width: auto;
+  margin: 0;
+  padding: 10px 16px;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }

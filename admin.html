@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>관리자</title>
-  <link rel="stylesheet" href="style.css?v=20260129-5" />
+  <link rel="stylesheet" href="style.css?v=20260130-1" />
 </head>
 <body>
 
@@ -15,7 +15,7 @@
 </nav>
 
 <!-- 관리자 로그인 섹션 -->
-<div id="loginContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
+<div id="loginContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 100px; min-height: calc(100vh - 100px);">
   <h2>관리자 페이지</h2>
   <p>비밀번호를 입력하세요.</p>
   <input id="passwordInput" type="password" placeholder="비밀번호" style="padding: 8px; width: 300px; margin-bottom: 10px; font-size: 16px;" />
@@ -29,9 +29,11 @@
 
   <!-- 팀 생성 섹션 -->
   <div style="background-color:#f5f5f5; padding:20px; margin-bottom:20px; border-radius:5px">
-    <h3>새 팀 등록</h3>
-    <input id="teamName" placeholder="팀 이름" style="padding:8px; width:300px; margin-right:10px" />
-    <button id="addTeamBtn" style="background-color:blue; color:white; padding:10px 20px; cursor:pointer; border:none; border-radius:5px">팀 추가</button>
+    <div class="team-create-row">
+      <h3 class="team-create-title">새 팀 등록</h3>
+      <input id="teamName" placeholder="팀 이름" class="team-create-input" />
+      <button id="addTeamBtn" class="team-create-button">팀 추가</button>
+    </div>
   </div>
 
   <div class="dashboard-controls">
@@ -42,14 +44,14 @@
 
   <!-- 팀별 투자 현황 -->
   <h3>팀별 투자 현황</h3>
-  <button id="resetBtn" style="background-color:#ff4444; color:white; padding:10px 20px; margin-bottom:20px; cursor:pointer; border:none; border-radius:5px">전체 데이터 초기화</button>
   <div id="list"></div>
+  <button id="resetBtn" style="background-color:#ff4444; color:white; padding:10px 20px; margin:24px 0 0; cursor:pointer; border:none; border-radius:5px">전체 데이터 초기화</button>
 </div>
 
 <script type="module">
   // Firebase 초기화
   import { db } from "./firebase.js";
-  import { collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+  import { collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
   // 전역 설정: 비밀번호
   const ADMIN_PASSWORD = "1234#"; // 적절히 강력한 비밀번호로 설정하세요.
@@ -87,6 +89,10 @@
     const teamName = teamNameInput.value.trim();
     if (!teamName) {
       alert("팀 이름을 입력하세요.");
+      return;
+    }
+    if (latestTeams.some((team) => (team.data.name || "").trim() === teamName)) {
+      alert(`"${teamName}" 팀은 이미 등록되어 있습니다.`);
       return;
     }
 
@@ -155,16 +161,27 @@
       const team = data;
       const teamName = team.name || "이름 없음";
       const totalInvestment = team.totalInvestment || 0;
-      const investors = investmentsByTeam.get(id) || [];
-      const investorText = investors.length ? investors.join(", ") : "없음";
+      const investments = investmentsByTeam.get(id) || [];
+      const investorText = investments.length
+        ? investments
+            .map(({ investor, amount }) => `${investor} ${amount.toLocaleString()}원`)
+            .join(", ")
+        : "없음";
 
       list.innerHTML += `
         <div class="team-invest-item">
           <div class="team-invest-header">
-            <div class="team-title">
+            <div class="team-info">
               <span class="team-chip">${teamName}</span>
+              <div class="team-amount">${totalInvestment.toLocaleString()}원</div>
             </div>
-            <div class="team-amount">${totalInvestment.toLocaleString()}원</div>
+            <button
+              class="team-reset-btn"
+              data-team-id="${id}"
+              data-team-name="${teamName}"
+            >
+              팀 데이터 삭제
+            </button>
           </div>
           <div class="team-investors">투자팀: ${investorText}</div>
         </div>`;
@@ -187,17 +204,16 @@
       const investment = docu.data();
       const teamId = investment.teamId;
       const investor = investment.user;
+      const amount = Number(investment.amount) || 0;
       if (!teamId || !investor) return;
 
       if (!nextMap.has(teamId)) {
-        nextMap.set(teamId, new Set());
+        nextMap.set(teamId, []);
       }
-      nextMap.get(teamId).add(investor);
+      nextMap.get(teamId).push({ investor, amount });
     });
 
-    investmentsByTeam = new Map(
-      Array.from(nextMap.entries()).map(([teamId, set]) => [teamId, Array.from(set)])
-    );
+    investmentsByTeam = nextMap;
 
     renderTeamInvestments(latestTeams);
   });
@@ -213,6 +229,49 @@
     });
     renderTeamInvestments(latestTeams);
   };
+
+  // 팀별 데이터 삭제 버튼 핸들러 (이벤트 위임)
+  list.addEventListener("click", async (event) => {
+    const button = event.target.closest(".team-reset-btn");
+    if (!button) return;
+
+    const teamId = button.dataset.teamId;
+    const teamName = button.dataset.teamName || "해당 팀";
+
+    if (!teamId) return;
+
+    if (!confirm(`정말로 "${teamName}"의 데이터를 삭제하시겠습니까?\n해당 팀과 투자 기록이 모두 삭제되며 이 작업은 되돌릴 수 없습니다.`)) {
+      return;
+    }
+
+    try {
+      button.disabled = true;
+      button.innerText = "삭제 중...";
+
+      const batch = writeBatch(db);
+
+      // 팀 문서 삭제
+      batch.delete(doc(db, "teams", teamId));
+
+      // 해당 팀의 투자 기록 삭제
+      const investmentsSnapshot = await getDocs(
+        query(collection(db, "investments"), where("teamId", "==", teamId))
+      );
+      investmentsSnapshot.forEach((docSnap) => {
+        batch.delete(doc(db, "investments", docSnap.id));
+      });
+
+      await batch.commit();
+
+      alert(`"${teamName}" 데이터가 삭제되었습니다.`);
+    } catch (error) {
+      console.error("팀 데이터 삭제 오류:", error);
+      alert("팀 데이터 삭제 중 오류가 발생했습니다: " + error.message);
+    } finally {
+      button.disabled = false;
+      button.innerText = "팀 데이터 삭제";
+    }
+  });
 </script>
 
 </body>
