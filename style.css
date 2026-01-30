@@ -59,9 +59,6 @@ body {
   justify-content: space-around; 
   padding: 10px 8px; 
   background-color: blue;
-  position: sticky; 
-  top: 0;
-  z-index: 1000; 
 }
 
 .navbar a,
@@ -104,6 +101,27 @@ input, button {
   font-size: 16px;
 }
 
+.amount-row {
+  position: relative;
+}
+
+.amount-row input {
+  margin: 12px 0;
+  width: 100%;
+  padding-right: 110px;
+}
+
+.amount-hangul {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .current-team {
   margin: 16px 0;
   font-size: 16px;
@@ -126,6 +144,15 @@ button {
 
 button:hover {
   background-color: blue; 
+}
+
+.sticky-panel {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #f9f9f9;
+  padding-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 #teams div {
@@ -299,7 +326,7 @@ button:hover {
 }
 
 .team-chip {
-  font-size: 11px;
+  font-size: 19px;
   font-weight: bold;
   color: #1f2933;
   background: #e3e8ef;
@@ -318,12 +345,6 @@ button:hover {
   font-size: 21px;
   font-weight: bold;
   color: #0b2f6b;
-  margin-top: 6px;
-}
-
-.team-investors {
-  color: #333;
-  font-size: 14px;
   margin-top: 6px;
 }
 
@@ -361,29 +382,52 @@ button:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .team-create-title {
   margin: 0;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .team-create-input {
   display: inline-block;
-  width: 240px;
+  width: 190px;
   max-width: 100%;
   margin: 0;
   padding: 8px 10px;
+  height: 36px;
 }
 
 .team-create-button {
   display: inline-block;
   width: auto;
   margin: 0;
-  padding: 10px 16px;
+  padding: 8px 16px;
+  height: 36px;
+  white-space: nowrap;
   background-color: blue;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.team-investors {
+  color: #333;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.investor-chip {
+  display: inline-block;
+  padding: 4px 8px;
+  margin: 2px 4px 0 0;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #f2f2f2, #fbfbfb);
+  border: 1px solid #e1e1e1;
+  color: #222;
+  font-size: 13px;
+  white-space: nowrap;
 }

@@ -18,7 +18,10 @@
 <h2 id="teamName"></h2>
 팀 이름 <span id="investmentBadge" class="badge"></span>
 </h2>
-<input id="amount" placeholder="투자금 (10만원 단위)" />
+<div class="amount-row">
+  <input id="amount" placeholder="투자금 (10만원 단위)" inputmode="numeric" />
+  <span id="amountHangul" class="amount-hangul"></span>
+</div>
 <button onclick="invest()">투자</button>
 
 <script type="module">
@@ -90,9 +93,67 @@ async function loadTeam() {
 // 로드 팀 데이터 호출
 loadTeam();
 
+const amountInput = document.getElementById("amount");
+const amountHangulEl = document.getElementById("amountHangul");
+
+function parseAmount(value) {
+  return Number((value || "").replace(/[^\d]/g, ""));
+}
+
+function formatAmountInput(value) {
+  const digits = (value || "").replace(/[^\d]/g, "");
+  if (!digits) return "";
+  return `${Number(digits).toLocaleString()}원`;
+}
+
+function chunkToKorean(chunk) {
+  const digits = ["", "일", "이", "삼", "사", "오", "육", "칠", "팔", "구"];
+  const units = ["", "십", "백", "천"];
+  let result = "";
+  for (let i = 0; i < 4; i++) {
+    const digit = Math.floor(chunk / Math.pow(10, 3 - i)) % 10;
+    if (digit === 0) continue;
+    const unit = units[3 - i];
+    const digitText = (digit === 1 && unit !== "") ? "" : digits[digit];
+    result += `${digitText}${unit}`;
+  }
+  return result;
+}
+
+function toKoreanNumber(value) {
+  if (!value) return "";
+  const bigUnits = ["", "만", "억", "조", "경"];
+  let num = value;
+  let unitIndex = 0;
+  let result = "";
+
+  while (num > 0 && unitIndex < bigUnits.length) {
+    const chunk = num % 10000;
+    if (chunk > 0) {
+      const chunkText = chunkToKorean(chunk);
+      result = `${chunkText}${bigUnits[unitIndex]}${result}`;
+    }
+    num = Math.floor(num / 10000);
+    unitIndex += 1;
+  }
+
+  return result;
+}
+
+amountInput.addEventListener("input", () => {
+  amountInput.value = formatAmountInput(amountInput.value);
+  const amount = parseAmount(amountInput.value);
+  if (!amount) {
+    amountHangulEl.innerText = "";
+    return;
+  }
+  amountHangulEl.innerText = `(${toKoreanNumber(amount)}원)`;
+});
+
 // 투자 로직
 window.invest = async function () {
-  const amount = Number(document.getElementById("amount").value);
+  const amount = parseAmount(amountInput.value);
+  if (!amount) return alert("투자금을 입력해주세요");
   if (amount % 100000 !== 0) return alert("10만원 단위로만 입력 가능합니다");
 
   try {

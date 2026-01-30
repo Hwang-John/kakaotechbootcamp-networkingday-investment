@@ -37,7 +37,7 @@
   </div>
 
   <div class="dashboard-controls">
-    <button id="sortByInvestment">투자 많이 받은 순</button>
+    <button id="sortByInvestment">투자 많이 받은 순으로 나열</button>
   </div>
 
   <div id="teamList"></div>
@@ -164,8 +164,10 @@
       const investments = investmentsByTeam.get(id) || [];
       const investorText = investments.length
         ? investments
-            .map(({ investor, amount }) => `${investor} ${amount.toLocaleString()}원`)
-            .join(", ")
+            .map(({ investor, amount }) => (
+              `<span class="investor-chip">${investor} ${amount.toLocaleString()}원</span>`
+            ))
+            .join(" ")
         : "없음";
 
       list.innerHTML += `
