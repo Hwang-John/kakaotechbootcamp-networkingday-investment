@@ -172,6 +172,10 @@ input, button {
   width: auto;
 }
 
+.btn-link {
+  text-decoration: none;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, #2563eb, #3b82f6);
   box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
@@ -728,6 +732,31 @@ button:hover {
 
 .admin-action-row .navbar {
   gap: 2px;
+}
+
+.admin-action-row {
+  justify-content: center;
+}
+
+@media screen and (max-width: 400px) {
+  .admin-action-row {
+    gap: 4px;
+  }
+
+  .admin-action-row .btn,
+  .admin-action-row .navbar a {
+    height: 38px;
+    min-height: 38px;
+    width: 84px;
+    min-width: 84px;
+    padding: 0 4px;
+    font-size: 16px;
+    line-height: 38px;
+  }
+
+  .admin-action-row .navbar {
+    gap: 1px;
+  }
 }
 
 .admin-action-row #openInvestmentBtn {
