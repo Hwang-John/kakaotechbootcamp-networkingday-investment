@@ -8,12 +8,6 @@
 </head>
 <body>
 
-<!-- 내비게이션 바 -->
-<nav class="navbar">
-  <a href="index.html" class="nav-home">홈</a>
-  <a href="admin.html" class="nav-admin">관리자</a>
-</nav>
-
 <!-- 관리자 로그인 섹션 -->
 <div id="loginContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 100px; min-height: calc(100vh - 100px);">
   <h2>관리자 페이지</h2>
@@ -25,11 +19,17 @@
 
 <!-- 관리자 콘텐츠 (초기에 숨김 처리) -->
 <div id="adminContent" style="display: none;">
-  <h2>관리자 페이지</h2>
-  <div id="investmentStatus" style="font-weight:600; margin:6px 0 12px;"></div>
-  <div style="display:flex; gap:10px; align-items:center; margin:10px 0 24px;">
-    <button id="openInvestmentBtn" class="btn btn-success btn-inline">투자 시작</button>
-    <button id="closeInvestmentBtn" class="btn btn-danger btn-inline">투자 종료</button>
+  <div class="admin-sticky">
+    <h2>관리자 페이지</h2>
+    <div id="investmentStatus" style="font-weight:600; margin:6px 0 12px;"></div>
+    <div class="admin-action-row" style="display:flex; gap:6px; align-items:center; margin:10px 0 24px; flex-wrap: nowrap;">
+      <nav class="navbar" style="margin: 0; padding: 0; background: transparent;">
+        <a href="index.html" class="nav-home">홈</a>
+        <a href="admin.html" class="nav-admin">관리자</a>
+      </nav>
+      <button id="openInvestmentBtn" class="btn btn-success btn-inline">투자 시작</button>
+      <button id="closeInvestmentBtn" class="btn btn-danger btn-inline">투자 종료</button>
+    </div>
   </div>
 
   <!-- 팀 생성 섹션 -->

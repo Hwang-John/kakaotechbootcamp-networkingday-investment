@@ -259,6 +259,63 @@ button:hover {
   box-shadow: none;
 }
 
+.team-login-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin: 6px 0 12px;
+}
+
+.team-login-label {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
+.team-login-input {
+  flex: 0 1 25%;
+  min-width: 0;
+  margin: 0;
+  width: auto;
+  height: 40px;
+  padding: 8px 12px;
+  font-size: 15px;
+}
+
+.team-login-btn {
+  margin: 0;
+  width: auto;
+  white-space: nowrap;
+  height: 40px;
+  padding: 0 14px;
+  font-size: 15px;
+  border-radius: 12px;
+}
+
+@media screen and (max-width: 520px) {
+  .team-login-row {
+    gap: 6px;
+  }
+
+  .team-login-label {
+    font-size: 18px;
+  }
+
+  .team-login-input {
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .team-login-btn {
+    height: 36px;
+    font-size: 14px;
+    padding: 0 12px;
+  }
+}
+
 #teams div {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
@@ -655,4 +712,35 @@ button:hover {
   color: #222;
   font-size: 13px;
   white-space: nowrap;
+}
+
+.admin-action-row .btn,
+.admin-action-row .navbar a {
+  height: 42px;
+  min-height: 42px;
+  width: 96px;
+  min-width: 96px;
+  padding: 0 6px;
+  font-size: 18px;
+  line-height: 42px;
+  box-sizing: border-box;
+}
+
+.admin-action-row .navbar {
+  gap: 2px;
+}
+
+.admin-action-row #openInvestmentBtn {
+  background: linear-gradient(135deg, #7dd3fc, #38bdf8);
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(56, 189, 248, 0.35);
+}
+
+.admin-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  background-color: #f9f9f9;
+  padding: 6px 0 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }

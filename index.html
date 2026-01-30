@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>카카오테크 부트캠프 투자 프로그램</title>
-  <link rel="stylesheet" href="style.css?v=20260130-4" />
+  <link rel="stylesheet" href="style.css?v=20260130-5" />
 </head>
 <body class="home-dashboard">
 
@@ -29,9 +29,11 @@
   <div class="sticky-panel" id="stickyPanel">
 
     <div id="loginSection">
-      <h2>팀 번호 입력</h2>
-      <input id="username" placeholder="예시_1팀" />
-      <button id="startBtn" class="btn btn-primary">투자 시작하기</button>
+      <div class="team-login-row">
+        <span class="team-login-label">팀 번호 입력</span>
+        <input id="username" class="team-login-input" placeholder="예시_1팀" />
+        <button id="startBtn" class="btn btn-primary team-login-btn">투자 시작하기</button>
+      </div>
     </div>
     <p id="currentTeam" class="current-team" style="display: none;"></p>
 
