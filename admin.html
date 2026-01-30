@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>관리자</title>
-  <link rel="stylesheet" href="style.css?v=20260130-1" />
+  <link rel="stylesheet" href="style.css?v=20260130-3" />
 </head>
 <body>
 
 <!-- 내비게이션 바 -->
 <nav class="navbar">
-  <a href="index.html">홈</a>
-  <a href="admin.html">관리자</a>
+  <a href="index.html" class="nav-home">홈</a>
+  <a href="admin.html" class="nav-admin">관리자</a>
 </nav>
 
 <!-- 관리자 로그인 섹션 -->
@@ -19,13 +19,18 @@
   <h2>관리자 페이지</h2>
   <p>비밀번호를 입력하세요.</p>
   <input id="passwordInput" type="password" placeholder="비밀번호" style="padding: 8px; width: 300px; margin-bottom: 10px; font-size: 16px;" />
-  <button id="loginButton" style="padding: 10px 20px; background-color: blue; color: white; border: none; border-radius: 5px; cursor: pointer;">확인</button>
+  <button id="loginButton" class="btn btn-primary btn-inline">확인</button>
   <p id="errorText" style="color: red; margin-top: 10px; display: none;">잘못된 비밀번호입니다. 다시 시도하세요.</p>
 </div>
 
 <!-- 관리자 콘텐츠 (초기에 숨김 처리) -->
 <div id="adminContent" style="display: none;">
   <h2>관리자 페이지</h2>
+  <div id="investmentStatus" style="font-weight:600; margin:6px 0 12px;"></div>
+  <div style="display:flex; gap:10px; align-items:center; margin:10px 0 24px;">
+    <button id="openInvestmentBtn" class="btn btn-success btn-inline">투자 시작</button>
+    <button id="closeInvestmentBtn" class="btn btn-danger btn-inline">투자 종료</button>
+  </div>
 
   <!-- 팀 생성 섹션 -->
   <div style="background-color:#f5f5f5; padding:20px; margin-bottom:20px; border-radius:5px">
@@ -36,22 +41,18 @@
     </div>
   </div>
 
-  <div class="dashboard-controls">
-    <button id="sortByInvestment">투자 많이 받은 순으로 나열</button>
-  </div>
-
   <div id="teamList"></div>
 
   <!-- 팀별 투자 현황 -->
   <h3>팀별 투자 현황</h3>
   <div id="list"></div>
-  <button id="resetBtn" style="background-color:#ff4444; color:white; padding:10px 20px; margin:24px 0 0; cursor:pointer; border:none; border-radius:5px">전체 데이터 초기화</button>
+  <button id="resetBtn" class="btn btn-danger">전체 데이터 초기화</button>
 </div>
 
 <script type="module">
   // Firebase 초기화
   import { db } from "./firebase.js";
-  import { collection, onSnapshot, getDocs, deleteDoc, doc, writeBatch, setDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+  import { collection, onSnapshot, getDocs, doc, writeBatch, setDoc, query, where, increment } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
   // 전역 설정: 비밀번호
   const ADMIN_PASSWORD = "1234#"; // 적절히 강력한 비밀번호로 설정하세요.
@@ -67,7 +68,11 @@
   const resetBtn = document.getElementById("resetBtn");
   const addTeamBtn = document.getElementById("addTeamBtn");
   const teamNameInput = document.getElementById("teamName");
-  const sortByInvestmentButton = document.getElementById("sortByInvestment");
+  const openInvestmentBtn = document.getElementById("openInvestmentBtn");
+  const closeInvestmentBtn = document.getElementById("closeInvestmentBtn");
+  const investmentStatus = document.getElementById("investmentStatus");
+
+  const investmentSettingRef = doc(db, "settings", "investment");
 
   // 로그인 버튼 클릭 이벤트
   loginButton.onclick = () => {
@@ -81,6 +86,33 @@
     } else {
       // 실패
       errorText.style.display = "block"; // 에러 메시지 표시
+    }
+  };
+
+  // 투자 시작/종료 설정
+  openInvestmentBtn.onclick = async () => {
+    try {
+      openInvestmentBtn.disabled = true;
+      await setDoc(investmentSettingRef, { isOpen: true, updatedAt: new Date() }, { merge: true });
+      alert("투자가 시작되었습니다.");
+    } catch (error) {
+      console.error("투자 시작 오류:", error);
+      alert("투자 시작 중 오류가 발생했습니다: " + error.message);
+    } finally {
+      openInvestmentBtn.disabled = false;
+    }
+  };
+
+  closeInvestmentBtn.onclick = async () => {
+    try {
+      closeInvestmentBtn.disabled = true;
+      await setDoc(investmentSettingRef, { isOpen: false, updatedAt: new Date() }, { merge: true });
+      alert("투자가 종료되었습니다.");
+    } catch (error) {
+      console.error("투자 종료 오류:", error);
+      alert("투자 종료 중 오류가 발생했습니다: " + error.message);
+    } finally {
+      closeInvestmentBtn.disabled = false;
     }
   };
 
@@ -157,7 +189,22 @@
 
   function renderTeamInvestments(teams) {
     list.innerHTML = "";
-    teams.forEach(({ id, data }, index) => {
+    const sortedTeams = [...teams].sort((a, b) => {
+      const aAmount = a.data.totalInvestment || 0;
+      const bAmount = b.data.totalInvestment || 0;
+      return bAmount - aAmount;
+    });
+
+    const amountCounts = new Map();
+    sortedTeams.forEach(({ data }) => {
+      const amount = data.totalInvestment || 0;
+      amountCounts.set(amount, (amountCounts.get(amount) || 0) + 1);
+    });
+
+    let currentRank = 0;
+    let prevAmount = null;
+
+    sortedTeams.forEach(({ id, data }, index) => {
       const team = data;
       const teamName = team.name || "이름 없음";
       const totalInvestment = team.totalInvestment || 0;
@@ -169,11 +216,23 @@
             ))
             .join(" ")
         : "없음";
+      if (prevAmount === null || totalInvestment !== prevAmount) {
+        currentRank = index + 1;
+        prevAmount = totalInvestment;
+      }
+      const isTie = (amountCounts.get(totalInvestment) || 0) > 1;
+      const rankLabel = isTie ? `공동 ${currentRank}위` : `${currentRank}위`;
 
       list.innerHTML += `
         <div class="team-invest-item">
           <div class="team-invest-header">
             <div class="team-info">
+              <span class="team-rank">
+                ${currentRank === 1 ? '<span class="rank-medal" aria-label="금메달">🥇</span>' : ""}
+                ${currentRank === 2 ? '<span class="rank-medal" aria-label="은메달">🥈</span>' : ""}
+                ${currentRank === 3 ? '<span class="rank-medal" aria-label="동메달">🥉</span>' : ""}
+                ${rankLabel}
+              </span>
               <span class="team-chip">${teamName}</span>
               <div class="team-amount">${totalInvestment.toLocaleString()}원</div>
             </div>
@@ -219,18 +278,13 @@
 
     renderTeamInvestments(latestTeams);
   });
-  
-  // 투자 많이 받은 순서로 정렬
-  sortByInvestmentButton.onclick = async () => {
-    const q = query(collection(db, "teams"), orderBy("totalInvestment", "desc"));
-    const snapshot = await getDocs(q);
 
-    latestTeams = [];
-    snapshot.forEach(docu => {
-      latestTeams.push({ id: docu.id, data: docu.data() });
-    });
-    renderTeamInvestments(latestTeams);
-  };
+  // 투자 상태 실시간 표시
+  onSnapshot(investmentSettingRef, (snap) => {
+    const isOpen = snap.exists() ? !!snap.data().isOpen : true;
+    investmentStatus.innerText = isOpen ? "현재 상태: 투자 진행 중" : "현재 상태: 투자 종료";
+  });
+  
 
   // 팀별 데이터 삭제 버튼 핸들러 (이벤트 위임)
   list.addEventListener("click", async (event) => {
@@ -251,6 +305,7 @@
       button.innerText = "삭제 중...";
 
       const batch = writeBatch(db);
+      const refundByUser = new Map();
 
       // 팀 문서 삭제
       batch.delete(doc(db, "teams", teamId));
@@ -260,7 +315,22 @@
         query(collection(db, "investments"), where("teamId", "==", teamId))
       );
       investmentsSnapshot.forEach((docSnap) => {
+        const investment = docSnap.data() || {};
+        const investor = investment.user;
+        const amount = Number(investment.amount) || 0;
+        if (investor && amount > 0) {
+          refundByUser.set(investor, (refundByUser.get(investor) || 0) + amount);
+        }
         batch.delete(doc(db, "investments", docSnap.id));
+      });
+
+      refundByUser.forEach((amount, investor) => {
+        const userRef = doc(db, "users", investor);
+        batch.set(
+          userRef,
+          { name: investor, remainingMoney: increment(amount) },
+          { merge: true }
+        );
       });
 
       await batch.commit();

@@ -11,6 +11,7 @@ body {
   background-color: #f9f9f9;
 }
 
+
 @media screen and (min-width: 520px) {
   body {
     max-width: 520px;
@@ -56,9 +57,12 @@ body {
 
 .navbar {
   display: flex;
-  justify-content: space-around; 
-  padding: 10px 8px; 
-  background-color: blue;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background-color: #eef2ff;
+  border-radius: 14px;
+  margin: 10px 0 14px;
 }
 
 .navbar a,
@@ -66,14 +70,17 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 10px;
+  padding: 8px 14px;
   margin: 0;
-  width: auto;
+  width: 100px;
+  min-height: 36px;
   color: white;
   font-size: 16px; 
   font-weight: bold;
   text-decoration: none;
   line-height: 1;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .navbar a:hover,
@@ -85,6 +92,30 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
+}
+
+.navbar .nav-home {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+}
+
+.navbar .nav-admin {
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  border: 1px solid rgba(15, 118, 110, 0.25);
+}
+
+.navbar .nav-button {
+  background: #e2e8f0;
+  color: #1f2933;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+.navbar .nav-home:hover,
+.navbar .nav-admin:hover,
+.navbar .nav-button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  transition: transform 0.12s ease, filter 0.12s ease;
 }
 
 .navbar button:focus-visible {
@@ -99,6 +130,61 @@ input, button {
   margin: 12px auto;
   width: 100%;
   font-size: 16px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  margin: 12px auto;
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.btn:hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.3);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-inline {
+  margin: 0;
+  width: auto;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  box-shadow: 0 6px 14px rgba(15, 118, 110, 0.26);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #b91c1c, #ef4444);
+  box-shadow: 0 6px 14px rgba(185, 28, 28, 0.26);
 }
 
 .amount-row {
@@ -142,6 +228,10 @@ button {
   cursor: pointer;
 }
 
+.home-dashboard button {
+  border-radius: 16px;
+}
+
 button:hover {
   background-color: blue; 
 }
@@ -153,6 +243,20 @@ button:hover {
   background-color: #f9f9f9;
   padding-bottom: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.home-sticky-stack {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  background-color: #f9f9f9;
+  padding-bottom: 8px;
+}
+
+.home-dashboard .sticky-panel {
+  position: static;
+  z-index: auto;
+  box-shadow: none;
 }
 
 #teams div {
@@ -193,7 +297,7 @@ button:hover {
 
 /* 투자 완료 상태 */
 .badge-invested {
-  background-color: blue;
+  background-color: #9ca3af;
   color: white;
 }
 
@@ -215,6 +319,20 @@ button:hover {
 
 .team-card:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.team-card-disabled {
+  background-color: #f0f0f0;
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.team-card-disabled:hover {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.team-card-disabled .badge-invested {
+  background-color: #b3b3b3;
 }
 
 .team-name {
@@ -243,7 +361,7 @@ button:hover {
 }
 
 .badge-invested {
-  background-color: green;
+  background-color: #9ca3af;
   color: white;
 }
 
@@ -260,6 +378,8 @@ button:hover {
 }
 
 .header-image {
+    display: block;
+    margin: 0 auto;
     padding: 16px 0;
     width: 120px;
     max-width: 40vw;
@@ -278,6 +398,9 @@ button:hover {
     font-size: 24px; /* 텍스트 크기 */
     color: #333; /* 텍스트 색상 */
     margin-top: 5px; /* 이미지와 텍스트 사이 여백 */
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .dashboard-controls {
@@ -286,17 +409,21 @@ button:hover {
 }
 
 #sortByInvestment {
-  background-color: blue;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: white;
   padding: 10px 20px;
   border: none;
-  border-radius: 5px;
+  border-radius: 14px;
   cursor: pointer;
   font-size: 16px;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
 
 #sortByInvestment:hover {
-  background-color: skyblue; /* 호버 시 더 어두운 초록색 */
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.3);
 }
 
 .team-invest-item {
@@ -363,19 +490,39 @@ button:hover {
   height: 20px;
   padding: 1px 6px;
   margin: 0;
-  border-radius: 4px;
-  background-color: #e53935 !important;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #b91c1c, #ef4444) !important;
   color: white;
   border: none;
   cursor: pointer;
   line-height: 1;
   font-size: 12px;
+  box-shadow: 0 4px 10px rgba(185, 28, 28, 0.25);
 }
 
 .team-info {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+}
+
+.team-rank {
+  font-size: 12px;
+  font-weight: bold;
+  color: #1f2933;
+  background: #e9edf3;
+  border-radius: 999px;
+  padding: 3px 8px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rank-medal {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .team-create-row {
@@ -407,11 +554,89 @@ button:hover {
   padding: 8px 16px;
   height: 36px;
   white-space: nowrap;
-  background-color: blue;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 12px;
   cursor: pointer;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.team-create-button:hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.3);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 16px;
+  z-index: 2000;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #222;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+
+.modal-btn.ghost {
+  background: #eef2f7;
+  color: #222;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.modal-btn.primary {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.28);
+}
+
+.modal-btn.primary:hover,
+.modal-btn.ghost:hover {
+  filter: brightness(1.03);
+  transform: translateY(-1px);
 }
 
 .team-investors {

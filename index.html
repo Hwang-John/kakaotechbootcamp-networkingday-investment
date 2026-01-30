@@ -4,51 +4,60 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>카카오테크 부트캠프 투자 프로그램</title>
-  <link rel="stylesheet" href="style.css?v=20260130-1" />
+  <link rel="stylesheet" href="style.css?v=20260130-4" />
 </head>
-<body>
+<body class="home-dashboard">
 
    <!-- 가장 상단의 이미지 및 텍스트 섹션 -->
     <header class="main-header">
         <img src="https://hwang-john.github.io/image/%EC%B9%B4%ED%85%8C%EB%B6%80%20%EB%A1%9C%EA%B3%A0.png" alt="업로드한 이미지" class="header-image" />
-                <img src="https://hwang-john.github.io/image/ChatGPT%20Image%202026%EB%85%84%201%EC%9B%94%2028%EC%9D%BC%20%EC%98%A4%ED%9B%84%2005_24_03.png" alt="업로드한 이미지" class="header-image2" />
-        <h1 class="header-title">
-          카카오테크 부트캠프 네트워킹 데이 <br>
-          기업가 정신 프로그램<br>
-          투자 시뮬레이션 게임🚀
-        </h1>
+        <img src="https://hwang-john.github.io/image/ChatGPT%20Image%202026%EB%85%84%201%EC%9B%94%2028%EC%9D%BC%20%EC%98%A4%ED%9B%84%2005_24_03.png" alt="업로드한 이미지" class="header-image2" />
     </header>
 
-<div class="sticky-panel">
+<div class="home-sticky-stack">
+  <h1 class="header-title">
+    카카오테크 부트캠프 네트워킹 데이 <br>
+    기업가 정신 프로그램<br>
+    투자 시뮬레이션 게임🚀
+  </h1>
   <nav class="navbar">
-    <a href="index.html">홈</a>
-    <a href="admin.html">관리자</a>
+    <a href="index.html" class="nav-home">홈</a>
+    <a href="admin.html" class="nav-admin">관리자</a>
     <button id="logoutBtn" type="button" class="nav-button" style="display: none;">로그아웃</button>
   </nav>
 
-  <div id="loginSection">
-    <h2>팀 번호 입력</h2>
-    <input id="username" placeholder="예시_1팀" />
-    <button id="startBtn">투자 시작하기</button>
-  </div>
-  <p id="currentTeam" class="current-team" style="display: none;"></p>
+  <div class="sticky-panel" id="stickyPanel">
 
-  <hr />
+    <div id="loginSection">
+      <h2>팀 번호 입력</h2>
+      <input id="username" placeholder="예시_1팀" />
+      <button id="startBtn" class="btn btn-primary">투자 시작하기</button>
+    </div>
+    <p id="currentTeam" class="current-team" style="display: none;"></p>
 
-  <div id="progressBar">
-    <div></div>
-    <span id="currentValue">10,000,000원</span>
-  </div>
-  <div class="progress-labels">
-    <span id="startLabel">0원</span>
-    <span id="endLabel">10,000,000원</span>
-  </div>
+    <hr />
 
-  <h3 id="money"></h3>
+    <div id="progressBar">
+      <div></div>
+      <span id="currentValue">10,000,000원</span>
+    </div>
+    <div class="progress-labels">
+      <span id="startLabel">0원</span>
+      <span id="endLabel">10,000,000원</span>
+    </div>
+
+    <h3 id="money"></h3>
+  </div>
 </div>
 
-<h2>팀 리스트</h2>
-<div id="teams"></div>
+<div id="investmentClosedMessage" style="display:none; padding:40px 20px; text-align:center; font-size:24px; font-weight:700;">
+  투자가 종료되었습니다
+</div>
+
+<div id="teamListSection">
+  <h2>팀 리스트</h2>
+  <div id="teams"></div>
+</div>
 
 <script type="module">
 import { db } from "./firebase.js";
@@ -64,6 +73,16 @@ const teamsEl = document.getElementById("teams");
 const loginSection = document.getElementById("loginSection");
 const currentTeamEl = document.getElementById("currentTeam");
 const logoutBtn = document.getElementById("logoutBtn");
+const investmentClosedMessage = document.getElementById("investmentClosedMessage");
+const teamListSection = document.getElementById("teamListSection");
+const mainHeader = document.querySelector(".main-header");
+const stickyPanel = document.getElementById("stickyPanel");
+const progressBar = document.getElementById("progressBar");
+const progressLabels = document.querySelector(".progress-labels");
+const moneyTitle = document.getElementById("money");
+
+const investmentSettingRef = doc(db, "settings", "investment");
+let isInvestmentOpen = true;
 
 const userName = localStorage.getItem("user");
 
@@ -82,6 +101,32 @@ function updateLoginUI(name) {
 }
 
 updateLoginUI(userName);
+
+function applyInvestmentStatusUI() {
+  if (isInvestmentOpen) {
+    investmentClosedMessage.style.display = "none";
+    if (mainHeader) mainHeader.style.display = "";
+    if (teamListSection) teamListSection.style.display = "";
+    if (stickyPanel) stickyPanel.style.display = "";
+    if (progressBar) progressBar.style.display = "";
+    if (progressLabels) progressLabels.style.display = "";
+    if (moneyTitle) moneyTitle.style.display = "";
+    return;
+  }
+
+  investmentClosedMessage.style.display = "block";
+  if (mainHeader) mainHeader.style.display = "none";
+  if (teamListSection) teamListSection.style.display = "none";
+  if (stickyPanel) stickyPanel.style.display = "none";
+  if (progressBar) progressBar.style.display = "none";
+  if (progressLabels) progressLabels.style.display = "none";
+  if (moneyTitle) moneyTitle.style.display = "none";
+}
+
+onSnapshot(investmentSettingRef, (snap) => {
+  isInvestmentOpen = snap.exists() ? !!snap.data().isOpen : true;
+  applyInvestmentStatusUI();
+});
 
 // 로그아웃
 logoutBtn.onclick = () => {
@@ -172,7 +217,7 @@ function renderTeams() {
     const teamName = team.name || "이름 없음";
 
     teamsEl.innerHTML += `
-      <div class="team-card" onclick="location.href='team.html?id=${id}'">
+      <div class="team-card${isInvested ? " team-card-disabled" : ""}" data-team-id="${id}">
         <div class="team-row">
           <span class="team-name">${teamName}</span>
           <span class="badge ${badgeClass}">${badgeText}</span>
@@ -210,6 +255,24 @@ if (userName) {
 }
 
 loadMoney();
+
+// 투자 완료 팀 진입 차단
+teamsEl.addEventListener("click", (event) => {
+  const card = event.target.closest(".team-card");
+  if (!card) return;
+  const id = card.dataset.teamId;
+  if (!id) return;
+
+  if (!isInvestmentOpen) {
+    alert("투자가 종료되었습니다.");
+    return;
+  }
+  if (investedTeamIds.has(id)) {
+    alert("이미 투자를 완료한 팀 입니다.");
+    return;
+  }
+  location.href = `team.html?id=${id}`;
+});
 </script>
 
 </body>
