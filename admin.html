@@ -46,9 +46,24 @@
 
   <div id="teamList"></div>
 
+  <!-- 팀별 투자금 확인 -->
+  <div class="team-toggle-header" style="display:flex; align-items:center; gap:8px;">
+    <h3 style="margin:0;">💰 팀별 투자금 확인</h3>
+    <button id="toggleTeamMoneyBtn" class="btn btn-inline btn-primary" style="height:28px; padding:0 10px; font-size:12px; border-radius:10px;">열기</button>
+  </div>
+  <div id="teamMoneyPanel" style="display: block; margin-bottom: 4px;">
+    <div id="teamMoneySummary" style="font-size: 14px; margin: 6px 0 10px; color: #1f2933;"></div>
+    <div id="teamMoneyList"></div>
+  </div>
+
   <!-- 팀별 투자 현황 -->
-  <h3>팀별 투자 현황</h3>
-  <div id="list"></div>
+  <div class="team-toggle-header" style="display:flex; align-items:center; gap:8px; margin-top: 4px;">
+    <h3 style="margin:0;">🏆 투자 순위 확인</h3>
+    <button id="toggleTeamRankingBtn" class="btn btn-inline btn-primary" style="height:28px; padding:0 10px; font-size:12px; border-radius:10px;">닫기</button>
+  </div>
+  <div id="teamRankingPanel" style="display: block;">
+    <div id="list"></div>
+  </div>
   <button id="resetBtn" class="btn btn-danger">전체 데이터 초기화</button>
 </div>
 
@@ -68,6 +83,12 @@
   const errorText = document.getElementById("errorText");
 
   const list = document.getElementById("list");
+  const teamMoneyList = document.getElementById("teamMoneyList");
+  const teamMoneySummary = document.getElementById("teamMoneySummary");
+  const teamMoneyPanel = document.getElementById("teamMoneyPanel");
+  const toggleTeamMoneyBtn = document.getElementById("toggleTeamMoneyBtn");
+  const teamRankingPanel = document.getElementById("teamRankingPanel");
+  const toggleTeamRankingBtn = document.getElementById("toggleTeamRankingBtn");
   const resetBtn = document.getElementById("resetBtn");
   const addTeamBtn = document.getElementById("addTeamBtn");
   const teamNameInput = document.getElementById("teamName");
@@ -188,7 +209,95 @@
   };
 
   let latestTeams = [];
+  let latestUsers = [];
   let investmentsByTeam = new Map();
+  let investmentsByUser = new Map();
+  const INITIAL_BUDGET = 10000000;
+  const TEAM_MONEY_PANEL_KEY = "adminTeamMoneyPanelOpen";
+  const TEAM_RANKING_PANEL_KEY = "adminTeamRankingPanelOpen";
+
+  if (toggleTeamMoneyBtn && teamMoneyPanel) {
+    const savedOpenState = localStorage.getItem(TEAM_MONEY_PANEL_KEY);
+    const isOpen = savedOpenState === null ? true : savedOpenState === "true";
+    teamMoneyPanel.style.display = isOpen ? "block" : "none";
+    toggleTeamMoneyBtn.innerText = isOpen ? "닫기" : "열기";
+
+    toggleTeamMoneyBtn.addEventListener("click", () => {
+      const isHidden = teamMoneyPanel.style.display === "none";
+      teamMoneyPanel.style.display = isHidden ? "block" : "none";
+      toggleTeamMoneyBtn.innerText = isHidden ? "닫기" : "열기";
+      localStorage.setItem(TEAM_MONEY_PANEL_KEY, isHidden ? "true" : "false");
+    });
+  }
+
+  if (toggleTeamRankingBtn && teamRankingPanel) {
+    localStorage.setItem(TEAM_RANKING_PANEL_KEY, "true");
+    const isOpen = true;
+    teamRankingPanel.style.display = isOpen ? "block" : "none";
+    toggleTeamRankingBtn.innerText = isOpen ? "닫기" : "열기";
+
+    toggleTeamRankingBtn.addEventListener("click", () => {
+      const isHidden = teamRankingPanel.style.display === "none";
+      teamRankingPanel.style.display = isHidden ? "block" : "none";
+      toggleTeamRankingBtn.innerText = isHidden ? "닫기" : "열기";
+      localStorage.setItem(TEAM_RANKING_PANEL_KEY, isHidden ? "true" : "false");
+    });
+  }
+
+  function renderTeamMoneyStatus() {
+    if (!teamMoneyList) return;
+
+    const sortedUsers = [...latestUsers].sort((a, b) => {
+      const aInvested = investmentsByUser.get(a.data.name || a.id) || 0;
+      const bInvested = investmentsByUser.get(b.data.name || b.id) || 0;
+      return bInvested - aInvested;
+    });
+
+    let countActive = 0;
+    let countNone = 0;
+    let countDone = 0;
+
+    teamMoneyList.innerHTML = "";
+
+    sortedUsers.forEach(({ id, data }) => {
+      const teamName = (data.name || id || "").trim() || "이름 없음";
+      const investedAmount = investmentsByUser.get(teamName) || 0;
+      const remainingFromUser = Number(data.remainingMoney);
+      const remainingAmount = Number.isFinite(remainingFromUser)
+        ? remainingFromUser
+        : Math.max(0, INITIAL_BUDGET - investedAmount);
+
+      let statusText = "미투자";
+      let statusClass = "badge-not-invested";
+      if (investedAmount > 0 && remainingAmount > 0) {
+        statusText = "투자중";
+        statusClass = "badge-invested";
+        countActive += 1;
+      } else if (remainingAmount <= 0 && investedAmount > 0) {
+        statusText = "투자 완료";
+        statusClass = "badge-invested";
+        countDone += 1;
+      } else {
+        countNone += 1;
+      }
+
+      teamMoneyList.innerHTML += `
+        <div class="team-invest-item">
+          <div class="team-invest-header">
+            <div class="team-info">
+              <span class="team-chip">${teamName}</span>
+              <div class="team-amount">투자금: ${investedAmount.toLocaleString()}원</div>
+              <div class="team-invest-stats">미투자금: ${remainingAmount.toLocaleString()}원</div>
+            </div>
+            <span class="badge ${statusClass}">${statusText}</span>
+          </div>
+        </div>`;
+    });
+
+    if (teamMoneySummary) {
+      teamMoneySummary.innerText = `현재 투자중 ${countActive}팀 · 미투자 ${countNone}팀 · 투자 완료 ${countDone}팀`;
+    }
+  }
 
   function renderTeamInvestments(teams) {
     list.innerHTML = "";
@@ -261,9 +370,18 @@
     renderTeamInvestments(latestTeams);
   });
 
+  onSnapshot(collection(db, "users"), snapshot => {
+    latestUsers = [];
+    snapshot.forEach(docu => {
+      latestUsers.push({ id: docu.id, data: docu.data() });
+    });
+    renderTeamMoneyStatus();
+  });
+
   // Firestore에서 투자 데이터를 실시간으로 받아오기
   onSnapshot(collection(db, "investments"), snapshot => {
     const nextMap = new Map();
+    const nextUserMap = new Map();
     snapshot.forEach(docu => {
       const investment = docu.data();
       const teamId = investment.teamId;
@@ -275,11 +393,15 @@
         nextMap.set(teamId, []);
       }
       nextMap.get(teamId).push({ investor, amount });
+
+      nextUserMap.set(investor, (nextUserMap.get(investor) || 0) + amount);
     });
 
     investmentsByTeam = nextMap;
+    investmentsByUser = nextUserMap;
 
     renderTeamInvestments(latestTeams);
+    renderTeamMoneyStatus();
   });
 
   // 투자 상태 실시간 표시
