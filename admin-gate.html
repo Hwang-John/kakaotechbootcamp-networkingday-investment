@@ -84,8 +84,18 @@
         sessionStorage.setItem("adminToken", token);
         sessionStorage.setItem("adminTokenExpiry", expiry.toString());
 
+        // Firebase에서 관리자 페이지 URL 가져오기
+        const adminPageUrl = adminData.adminPageUrl;
+        if (!adminPageUrl) {
+          errorText.innerText = "관리자 페이지 URL이 설정되지 않았습니다.";
+          errorText.style.display = "block";
+          loadingText.style.display = "none";
+          loginButton.disabled = false;
+          return;
+        }
+
         // 실제 관리자 페이지로 이동
-        location.href = "mgmt-x7k9f2.html";
+        location.href = adminPageUrl;
       } else {
         // 인증 실패
         errorText.innerText = "잘못된 비밀번호입니다. 다시 시도하세요.";
