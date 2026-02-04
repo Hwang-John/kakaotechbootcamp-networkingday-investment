@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>관리자 인증</title>
+  <link rel="stylesheet" href="style.css?v=20260130-3" />
+</head>
+<body>
+
+<div id="loginContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 100px; min-height: calc(100vh - 100px);">
+  <h2>관리자 인증</h2>
+  <p>비밀번호를 입력하세요.</p>
+  <input id="passwordInput" type="password" placeholder="비밀번호" style="padding: 8px; width: 300px; margin-bottom: 10px; font-size: 16px;" />
+  <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
+    <button id="loginButton" class="btn btn-primary btn-inline">확인</button>
+    <a href="index.html" class="btn btn-inline btn-link">뒤로가기</a>
+  </div>
+  <p id="errorText" style="color: red; margin-top: 10px; display: none;">잘못된 비밀번호입니다. 다시 시도하세요.</p>
+  <p id="loadingText" style="color: #666; margin-top: 10px; display: none;">확인 중...</p>
+</div>
+
+<script type="module">
+  import { db } from "./firebase.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+  const passwordInput = document.getElementById("passwordInput");
+  const loginButton = document.getElementById("loginButton");
+  const errorText = document.getElementById("errorText");
+  const loadingText = document.getElementById("loadingText");
+
+  // SHA-256 해시 함수
+  async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  // 세션 토큰 생성
+  function generateSessionToken() {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2);
+    return `${timestamp}_${random}`;
+  }
+
+  loginButton.onclick = async () => {
+    const enteredPassword = passwordInput.value;
+
+    if (!enteredPassword) {
+      errorText.innerText = "비밀번호를 입력하세요.";
+      errorText.style.display = "block";
+      return;
+    }
+
+    try {
+      loginButton.disabled = true;
+      errorText.style.display = "none";
+      loadingText.style.display = "block";
+
+      // 입력된 비밀번호를 해시화
+      const hashedInput = await hashPassword(enteredPassword);
+
+      // Firebase에서 저장된 비밀번호 해시 가져오기
+      const adminDoc = await getDoc(doc(db, "settings", "admin"));
+
+      if (!adminDoc.exists()) {
+        errorText.innerText = "관리자 설정이 없습니다. Firebase에서 설정해주세요.";
+        errorText.style.display = "block";
+        loadingText.style.display = "none";
+        loginButton.disabled = false;
+        return;
+      }
+
+      const adminData = adminDoc.data();
+      const storedHash = adminData.passwordHash;
+
+      if (hashedInput === storedHash) {
+        // 인증 성공 - 세션 토큰 저장
+        const token = generateSessionToken();
+        const expiry = Date.now() + (30 * 60 * 1000); // 30분 후 만료
+
+        sessionStorage.setItem("adminToken", token);
+        sessionStorage.setItem("adminTokenExpiry", expiry.toString());
+
+        // 실제 관리자 페이지로 이동
+        location.href = "mgmt-x7k9f2.html";
+      } else {
+        // 인증 실패
+        errorText.innerText = "잘못된 비밀번호입니다. 다시 시도하세요.";
+        errorText.style.display = "block";
+      }
+    } catch (error) {
+      console.error("인증 오류:", error);
+      errorText.innerText = "인증 중 오류가 발생했습니다: " + error.message;
+      errorText.style.display = "block";
+    } finally {
+      loadingText.style.display = "none";
+      loginButton.disabled = false;
+    }
+  };
+
+  // Enter 키로 로그인
+  passwordInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      loginButton.click();
+    }
+  });
+</script>
+
+</body>
+</html>

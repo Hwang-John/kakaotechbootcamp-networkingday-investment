@@ -8,27 +8,15 @@
 </head>
 <body>
 
-<!-- 관리자 로그인 섹션 -->
-<div id="loginContainer" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 100px; min-height: calc(100vh - 100px);">
-  <h2>관리자 페이지</h2>
-  <p>비밀번호를 입력하세요.</p>
-  <input id="passwordInput" type="password" placeholder="비밀번호" style="padding: 8px; width: 300px; margin-bottom: 10px; font-size: 16px;" />
-  <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
-    <button id="loginButton" class="btn btn-primary btn-inline">확인</button>
-    <a href="index.html" class="btn btn-inline btn-link">뒤로가기</a>
-  </div>
-  <p id="errorText" style="color: red; margin-top: 10px; display: none;">잘못된 비밀번호입니다. 다시 시도하세요.</p>
-</div>
-
-<!-- 관리자 콘텐츠 (초기에 숨김 처리) -->
-<div id="adminContent" style="display: none;">
+<!-- 관리자 콘텐츠 -->
+<div id="adminContent">
   <div class="admin-sticky">
     <h2>관리자 페이지</h2>
     <div id="investmentStatus" style="font-weight:600; margin:6px 0 12px;"></div>
     <div class="admin-action-row" style="display:flex; gap:6px; align-items:center; margin:10px 0 24px; flex-wrap: nowrap;">
       <nav class="navbar" style="margin: 0; padding: 0; background: transparent;">
         <a href="index.html" class="nav-home">홈</a>
-        <a href="admin.html" class="nav-admin">관리자</a>
+        <button id="logoutAdminBtn" class="nav-admin" style="background:none; border:none; cursor:pointer; font:inherit; color:inherit;">로그아웃</button>
       </nav>
       <button id="openInvestmentBtn" class="btn btn-success btn-inline">투자 시작</button>
       <button id="closeInvestmentBtn" class="btn btn-danger btn-inline">투자 종료</button>
@@ -72,15 +60,44 @@
   import { db } from "./firebase.js";
   import { collection, onSnapshot, getDocs, doc, writeBatch, setDoc, query, where, increment } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-  // 전역 설정: 비밀번호
-  const ADMIN_PASSWORD = "1234#"; // 적절히 강력한 비밀번호로 설정하세요.
+  // 세션 확인 - 유효하지 않으면 홈으로 리다이렉트
+  function checkSession() {
+    const token = sessionStorage.getItem("adminToken");
+    const expiry = sessionStorage.getItem("adminTokenExpiry");
+
+    if (!token || !expiry) {
+      location.href = "index.html";
+      return false;
+    }
+
+    const expiryTime = parseInt(expiry, 10);
+    if (Date.now() > expiryTime) {
+      // 세션 만료
+      sessionStorage.removeItem("adminToken");
+      sessionStorage.removeItem("adminTokenExpiry");
+      alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+      location.href = "index.html";
+      return false;
+    }
+
+    return true;
+  }
+
+  // 페이지 로드 시 세션 확인
+  if (!checkSession()) {
+    throw new Error("Unauthorized");
+  }
+
+  // 로그아웃 버튼
+  const logoutAdminBtn = document.getElementById("logoutAdminBtn");
+  logoutAdminBtn.onclick = () => {
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminTokenExpiry");
+    location.href = "index.html";
+  };
 
   // DOM 요소 가져오기
-  const loginContainer = document.getElementById("loginContainer");
   const adminContent = document.getElementById("adminContent");
-  const passwordInput = document.getElementById("passwordInput");
-  const loginButton = document.getElementById("loginButton");
-  const errorText = document.getElementById("errorText");
 
   const list = document.getElementById("list");
   const teamMoneyList = document.getElementById("teamMoneyList");
@@ -97,21 +114,6 @@
   const investmentStatus = document.getElementById("investmentStatus");
 
   const investmentSettingRef = doc(db, "settings", "investment");
-
-  // 로그인 버튼 클릭 이벤트
-  loginButton.onclick = () => {
-    const enteredPassword = passwordInput.value;
-
-    // 비밀번호 비교
-    if (enteredPassword === ADMIN_PASSWORD) {
-      // 성공
-      loginContainer.style.display = "none"; // 로그인 폼 숨김
-      adminContent.style.display = "block"; // 관리자 콘텐츠 표시
-    } else {
-      // 실패
-      errorText.style.display = "block"; // 에러 메시지 표시
-    }
-  };
 
   // 투자 시작/종료 설정
   openInvestmentBtn.onclick = async () => {
@@ -157,7 +159,7 @@
       addTeamBtn.innerText = "추가 중...";
 
       const teamId = `team_${Date.now()}`;
-      
+
       await setDoc(doc(db, "teams", teamId), {
         name: teamName,
         totalInvestment: 0,
@@ -409,7 +411,7 @@
     const isOpen = snap.exists() ? !!snap.data().isOpen : true;
     investmentStatus.innerText = isOpen ? "현재 상태: 투자 진행 중" : "현재 상태: 투자 종료";
   });
-  
+
 
   // 팀별 데이터 삭제 버튼 핸들러 (이벤트 위임)
   list.addEventListener("click", async (event) => {
