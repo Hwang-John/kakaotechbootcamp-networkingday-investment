@@ -117,6 +117,33 @@
       loginButton.click();
     }
   });
+
+  // 페이지 로드 시 이미 로그인되어 있는지 확인
+  async function checkExistingSession() {
+    const token = sessionStorage.getItem("adminToken");
+    const expiry = sessionStorage.getItem("adminTokenExpiry");
+
+    if (token && expiry && Date.now() < parseInt(expiry)) {
+      // 유효한 세션이 있음 - 관리자 페이지 URL 가져와서 이동
+      try {
+        loadingText.style.display = "block";
+        const adminDoc = await getDoc(doc(db, "settings", "admin"));
+        if (adminDoc.exists()) {
+          const adminPageUrl = adminDoc.data().adminPageUrl;
+          if (adminPageUrl) {
+            location.href = adminPageUrl;
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("세션 확인 오류:", error);
+      } finally {
+        loadingText.style.display = "none";
+      }
+    }
+  }
+
+  checkExistingSession();
 </script>
 
 </body>
